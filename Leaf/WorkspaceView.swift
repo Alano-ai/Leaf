@@ -8,6 +8,9 @@ struct WorkspaceView: View {
     @State private var library = LibraryModel()
     @State private var importing = false
 
+    private static let bookTypes = [UTType.pdf, .plainText, .epub]
+        + ["mobi", "azw3"].compactMap { UTType(filenameExtension: $0, conformingTo: .data) }
+
     private var sidebarSelection: Binding<Workspace?> {
         Binding(
             get: { workspace },
@@ -36,7 +39,7 @@ struct WorkspaceView: View {
                     .disabled(!library.ready || library.busy)
             }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .plainText]) { result in
+        .fileImporter(isPresented: $importing, allowedContentTypes: Self.bookTypes) { result in
             switch result {
             case .success(let url):
                 Task {
@@ -79,7 +82,7 @@ struct WorkspaceView: View {
                 ContentUnavailableView {
                     Label("No Book Open", systemImage: "book")
                 } description: {
-                    Text("Select a PDF or TXT book from your library.")
+                    Text("Select a book from your library.")
                 } actions: {
                     Button("Show Library") { workspace = .library }
                 }
@@ -103,7 +106,7 @@ struct WorkspaceView: View {
             ContentUnavailableView {
                 Label("Your Library Is Empty", systemImage: "books.vertical")
             } description: {
-                Text("Import a PDF or TXT file to start reading.")
+                Text("Import an EPUB, MOBI, AZW3, PDF, or TXT file to start reading.")
             } actions: {
                 Button("Import Book…") { importing = true }
             }
@@ -115,7 +118,7 @@ struct WorkspaceView: View {
                     }
                 } label: {
                     HStack(spacing: 12) {
-                        Image(systemName: book.format == .pdf ? "book.closed" : "doc.text")
+                        Image(systemName: book.format == .txt ? "doc.text" : "book.closed")
                             .foregroundStyle(.secondary)
                             .accessibilityHidden(true)
                         Text(verbatim: book.title)

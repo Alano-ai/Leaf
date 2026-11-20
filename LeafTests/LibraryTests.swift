@@ -78,7 +78,7 @@ struct LibraryTests {
         try Data("%PDF-1.4\nbroken".utf8).write(to: brokenPDF)
         let brokenText = scratch.appending(path: "Broken.txt")
         try Data([0, 0, 0x81]).write(to: brokenText)
-        let unsupported = scratch.appending(path: "Unsupported.epub")
+        let unsupported = scratch.appending(path: "Unsupported.fb2")
         try Data([1]).write(to: unsupported)
 
         for (url, error) in [(protected, ReadingError.protectedPDF), (brokenPDF, .invalidPDF),

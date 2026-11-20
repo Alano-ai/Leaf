@@ -26,9 +26,25 @@ See the [standalone prototype](../Prototypes/Reader/README.md) and [engine evalu
 
 **Acceptance.** Open all five formats offline via the library. Reopening Leaf restores the library and reading position. Missing, malformed, unsupported and protected files show a clear error. Recheck runtime performance against the prototype results.
 
-The PDF and TXT increment is implemented. Leaf uses PDFKit for PDF pages and zoom, and SwiftUI scroll targets for TXT. The app requests read-only access to files selected for import. The [native reader evaluation](native-reader-evaluation.md) recommends a scoped reflowable EPUB integration and identifies libmobi as a candidate for the remaining Kindle formats. The [WebKit integration decision](reader-engine-evaluation.md#integration-decision) remains on hold.
+Leaf uses PDFKit for PDF pages and zoom and SwiftUI for TXT and reflowable ebooks. EPUB uses the reviewed ZIP reader and Foundation XML parsing. MOBI and AZW3 use the libmobi decoder with encryption disabled and the system HTML parser for legacy markup. The three ebook adapters share native text and image rendering, internal navigation and a catalog position made up of the section and scroll block. The app requests read-only access to files selected for import. See the [native reader evaluation](native-reader-evaluation.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).
 
-On the evaluation Mac, a Release-mode check reused the 320-page PDF and 2.67 MiB TXT fixtures. Across five warmed runs, the median import and catalog restore times were 1.03 ms and 0.26 ms for PDF, and 77.79 ms and 75.09 ms for TXT. Prototype input and document preparation took 0.16 ms and 70.85 ms respectively. These measurements stop before view layout. The separate desktop check confirmed that the PDF page and TXT scroll position restored after quitting and relaunching.
+The reflowable reader supports headings, basic emphasis, internal links and local raster images. Publisher stylesheets, embedded fonts, fixed layout and rich media remain compatibility work. EPUB accepts bounded, single-volume ZIP32 archives and rejects encryption manifests, including font obfuscation. Kindle checks both headers of hybrid books for encryption.
+
+The 21-test Xcode suite covers all five formats, protected and malformed inputs, and saved reader positions. Four package tests exercise the bounded ZIP entry point. A signed Release build launched in an isolated app container. The Release reading check imported the real sample books into isolated catalogs, deleted the temporary input copies, and reopened the managed copies at new positions. It also checked table-of-contents anchors and decoded local images in the EPUB, MOBI 6 and hybrid KF8 samples.
+
+The table reports medians from three fresh Release-mode reader processes per sample on the Apple M2. Import includes reading the source, validating the initial content and committing a private copy and catalog. Ebook target preparation includes decoding the initial section’s images and preparing the last contents target. Restore measures the saved position before SwiftUI layout. RSS is the highest value across these CLI runs. The [prototype timings](native-reader-evaluation.md#performance) measure individual decoder preparation and cannot be subtracted directly from import timings.
+
+| Sample | Import (ms) | Ebook target preparation (ms) | Restore (ms) | Peak CLI RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: |
+| 14.19 MiB EPUB | 26.38 | 8.61 | 9.72 | 43.1 |
+| MOBI 6 | 28.00 | 28.02 | 21.37 | 17.4 |
+| 3.03 MiB MOBI 4 dictionary | 898.50 | 806.25 | 892.40 | 114.5 |
+| Standalone KF8 | 5.92 | 1.19 | 1.76 | 12.0 |
+| Hybrid KF8 | 5.72 | 18.63 | 16.39 | 17.1 |
+| 320-page PDF | 59.24 | — | 0.43 | 16.4 |
+| 2.67 MiB TXT | 88.65 | — | 83.03 | 16.1 |
+
+The MOBI 4 dictionary puts more than 5 MiB of HTML in a single section and remains the slowest sample. Reading preparation runs away from the UI for ebooks. Earlier desktop checks verified PDF page and TXT scroll restoration, and the native EPUB probe verified an inline chapter link.
 
 ## 4. Independent conversion
 

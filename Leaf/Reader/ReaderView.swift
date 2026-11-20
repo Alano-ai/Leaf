@@ -19,6 +19,12 @@ struct ReaderView: View {
             TextReader(document: document, position: position) {
                 library.savePosition($0, in: session)
             }
+        case .ebook(let opening):
+            EbookReader(opening: opening, resume: library.ebookPosition(for: session, opening: opening)) {
+                library.savePosition($0, in: session)
+            } onFailure: {
+                library.message = $0.localizedDescription
+            }
         }
     }
 }

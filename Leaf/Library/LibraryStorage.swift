@@ -6,6 +6,9 @@ import Foundation
 enum BookFormat: String, Codable, Sendable {
     case pdf
     case txt
+    case epub
+    case mobi
+    case azw3
 
     var label: String { rawValue.uppercased() }
 }
@@ -15,6 +18,7 @@ struct LibraryBook: Codable, Equatable, Identifiable, Sendable {
     let title: String
     let format: BookFormat
     var position = 0
+    var ebookPosition: EbookPosition?
 
     static func identifier(for data: Data, format: BookFormat) -> String {
         "\(format.rawValue)-\(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined())"
@@ -50,7 +54,10 @@ struct LibraryStorage: Sendable {
             return LibraryCatalog()
         }
         let catalog = try JSONDecoder().decode(LibraryCatalog.self, from: data)
-        guard catalog.books.allSatisfy({ $0.hasValidIdentifier && $0.position >= 0 }),
+        guard catalog.books.allSatisfy({ book in
+            book.hasValidIdentifier && book.position >= 0
+                && (book.ebookPosition.map { $0.section >= 0 && $0.block >= 0 } ?? true)
+        }),
               Set(catalog.books.map(\.id)).count == catalog.books.count else {
             throw ReadingError.invalidCatalog
         }

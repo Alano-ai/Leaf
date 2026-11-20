@@ -1,18 +1,20 @@
 # Leaf
 A lightweight, native macOS eBook reader and converter built with SwiftUI and Liquid Glass.
 
-Leaf currently reads local PDF and TXT files. Leaf is designed for offline use without accounts or telemetry. EPUB, MOBI and AZW3 remain planned formats. Protected books are outside the supported reading and conversion scope.
+Leaf reads local EPUB, MOBI, AZW3, PDF and TXT books offline. It uses a private library without accounts or telemetry. Protected books are outside the supported reading and conversion scope.
 
 ## Read a local book
 
-Choose **Import Book…** in Library or press **⌘O** while Library is selected. Leaf stores its own copy in the app’s private library and opens it in Reader. Importing an identical file reuses the library entry and its reading position. Leaf reopens the most recently opened book at its saved PDF page or TXT position when it starts.
+Choose **Import Book…** in Library or press **⌘O** while Library is selected. Leaf stores its own copy in the app’s private library and opens it in Reader. Importing an identical file reuses the library entry and its reading position. On startup, Leaf reopens the most recent book at its saved page, section, or scroll position.
 
-PDF supports page navigation and zoom. TXT supports UTF-8, BOM-marked UTF-16 and GB18030. The current import limit is 64 MB per file.
+- EPUB, MOBI and AZW3 use native reflowable text with section navigation, tables of contents, internal links and supported local raster images. Leaf applies its own typography. Fixed-layout books and EPUB font-obfuscation manifests are outside this reader’s scope.
+- PDF supports page navigation and zoom. TXT supports UTF-8, BOM-marked UTF-16 and GB18030.
+- The import limit is 64 MB per file.
 
 ## Build and run
 
 - Run Leaf on macOS 26 or later. Apple Silicon is the primary development and verification target.
-- Build with Xcode 27.2 (macOS 27.2 SDK, Swift 6 language mode). No third-party packages are required.
+- Build with Xcode 27.2 (macOS 27.2 SDK, Swift 6 language mode). The pinned ZIP and Kindle source packages are included in the repository for offline builds. See the [third-party notices](THIRD_PARTY_NOTICES.md).
 - Open `Leaf.xcodeproj`, select the shared **Leaf** scheme and **My Mac**, then choose **Product → Run**.
 
 From the repository root:
@@ -22,7 +24,7 @@ xcodebuild -project Leaf.xcodeproj -scheme Leaf -destination 'platform=macOS,arc
 open build/Build/Products/Debug/Leaf.app
 ```
 
-To verify reading, import a PDF and advance a page. Quit and relaunch Leaf to confirm that the page is restored. Repeat with a TXT file after scrolling, then open Library and verify that it still lists both books.
+To verify reading, import samples of the five formats and check that each opens in Reader. Advance a PDF page, scroll a TXT, or use Contents and scroll in a reflowable book. Quit and relaunch Leaf to confirm that the most recent book restores its saved position, then open Library to see all imported books.
 
 See [architecture and milestones](docs/architecture.md) for feature scope and acceptance criteria.
 

@@ -8,6 +8,7 @@ struct ReadingSession {
     enum Content {
         case pdf(PDFDocument)
         case text(PlainText)
+        case ebook(EbookReading)
     }
 
     let book: LibraryBook
@@ -15,17 +16,22 @@ struct ReadingSession {
     let positionCount: Int
     let initialPosition: Int
 
-    init(book: LibraryBook, file: ReadingFile) throws {
+    init(book: LibraryBook, file: ReadingFile) async throws {
         self.book = book
-        if let text = file.text {
+        switch file.content {
+        case .text(let text):
             content = .text(text)
             positionCount = text.blocks.count
-        } else {
+        case .pdf:
             guard let document = PDFDocument(data: file.data) else { throw ReadingError.invalidPDF }
             guard !document.isEncrypted, !document.isLocked else { throw ReadingError.protectedPDF }
             guard document.pageCount > 0, document.page(at: 0) != nil else { throw ReadingError.invalidPDF }
             content = .pdf(document)
             positionCount = document.pageCount
+        case .ebook(let publication):
+            let ebook = try await EbookReading(publication: publication, resume: book.ebookPosition ?? EbookPosition())
+            content = .ebook(ebook)
+            positionCount = publication.sectionPaths.count
         }
         initialPosition = min(max(book.position, 0), positionCount - 1)
     }
@@ -79,7 +85,7 @@ final class LibraryModel {
             let prepared = try await Task.detached(priority: .userInitiated) { try ReadingFile.forImport(url) }.value
             let existing = books.first(where: { $0.id == prepared.book.id })
             let book = existing ?? prepared.book
-            let opened = try ReadingSession(book: book, file: prepared.file)
+            let opened = try await ReadingSession(book: book, file: prepared.file)
             let storage = storage
             try await Task.detached(priority: .userInitiated) {
                 // The identifier stays the same when retrying a partial import or replacing a missing copy.
@@ -121,6 +127,28 @@ final class LibraryModel {
               catalog.books[index].position != position else { return }
         var updated = catalog
         updated.books[index].position = position
+        saveReadingProgress(updated)
+    }
+
+    func ebookPosition(for session: ReadingSession, opening: EbookReading) -> EbookPosition {
+        guard let saved = books.first(where: { $0.id == session.book.id })?.ebookPosition,
+              opening.publication.sectionPaths.indices.contains(saved.section) else { return opening.position }
+        // Reopening clamps or moves past a saved position whose section has no renderable content.
+        if saved == session.book.ebookPosition { return opening.position }
+        return saved
+    }
+
+    func savePosition(_ position: EbookPosition, in session: ReadingSession) {
+        guard self.session?.book.id == session.book.id,
+              (0..<session.positionCount).contains(position.section), position.block >= 0,
+              let index = books.firstIndex(where: { $0.id == session.book.id }),
+              catalog.books[index].ebookPosition != position else { return }
+        var updated = catalog
+        updated.books[index].ebookPosition = position
+        saveReadingProgress(updated)
+    }
+
+    private func saveReadingProgress(_ updated: LibraryCatalog) {
         do {
             try commit(updated)
         } catch {
@@ -137,7 +165,7 @@ final class LibraryModel {
                 throw ReadingError.missingBook
             }
         }.value
-        return try ReadingSession(book: book, file: file)
+        return try await ReadingSession(book: book, file: file)
     }
 
     private func select(_ opened: ReadingSession, adding: Bool = false) throws {

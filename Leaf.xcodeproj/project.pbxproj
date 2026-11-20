@@ -5,6 +5,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1700000000000000000001C /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A1700000000000000000001D /* ZIPFoundation */; };
+		A1700000000000000000001E /* CLibMobi in Frameworks */ = {isa = PBXBuildFile; productRef = A1700000000000000000001F /* CLibMobi */; };
+		A17000000000000000000021 /* Licenses in Resources */ = {isa = PBXBuildFile; fileRef = A17000000000000000000020 /* Licenses */; };
+		A17000000000000000000023 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A17000000000000000000022 /* LICENSE */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A17000000000000000000001 /* Leaf target proxy */ = {
 			isa = PBXContainerItemProxy;
@@ -18,6 +25,8 @@
 /* Begin PBXFileReference section */
 		A17000000000000000000002 /* Leaf.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = Leaf.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A17000000000000000000003 /* LeafTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = LeafTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A17000000000000000000020 /* Licenses */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Licenses; path = Dependencies/ReaderLibraries/Licenses; sourceTree = "<group>"; };
+		A17000000000000000000022 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -37,7 +46,10 @@
 		A17000000000000000000006 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
-			files = ();
+			files = (
+				A1700000000000000000001C /* ZIPFoundation in Frameworks */,
+				A1700000000000000000001E /* CLibMobi in Frameworks */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A17000000000000000000007 /* Frameworks */ = {
@@ -54,6 +66,8 @@
 			children = (
 				A17000000000000000000004 /* Leaf */,
 				A17000000000000000000005 /* LeafTests */,
+				A17000000000000000000020 /* Licenses */,
+				A17000000000000000000022 /* LICENSE */,
 				A17000000000000000000009 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -84,6 +98,10 @@
 				A17000000000000000000004 /* Leaf */,
 			);
 			name = Leaf;
+			packageProductDependencies = (
+				A1700000000000000000001D /* ZIPFoundation */,
+				A1700000000000000000001F /* CLibMobi */,
+			);
 			productName = Leaf;
 			productReference = A17000000000000000000002 /* Leaf.app */;
 			productType = "com.apple.product-type.application";
@@ -130,6 +148,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (en, Base);
 			mainGroup = A17000000000000000000008;
+			packageReferences = (
+				A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A17000000000000000000009 /* Products */;
 			projectDirPath = "";
@@ -145,7 +166,10 @@
 		A1700000000000000000000D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = ();
+			files = (
+				A17000000000000000000021 /* Licenses in Resources */,
+				A17000000000000000000023 /* LICENSE in Resources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A1700000000000000000000E /* Resources */ = {
@@ -301,6 +325,26 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Dependencies/ReaderLibraries;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1700000000000000000001D /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */;
+			productName = ZIPFoundation;
+		};
+		A1700000000000000000001F /* CLibMobi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */;
+			productName = CLibMobi;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A1700000000000000000000C /* Project object */;
 }

@@ -1,6 +1,23 @@
 # Third-party notices
 
-The standalone reader prototype fetches the following source and fixtures into the ignored `build/reader-probe/` directory. Its build preserves license texts under `Contents/Resources/Notices/`. The Leaf application target uses the system SDK.
+## Leaf application
+
+The application builds and links the pinned sources in [Dependencies/ReaderLibraries](Dependencies/ReaderLibraries). Xcode uses this local Swift package without fetching dependencies. The app bundle includes the third-party license texts under `Contents/Resources/Licenses/` and the GPLv3 text at `Contents/Resources/LICENSE`.
+
+| Component | License | Source provenance |
+| --- | --- | --- |
+| ZIPFoundation 0.9.20, Thomas Zoechling and contributors | MIT | [Pinned release source](https://github.com/weichsel/ZIPFoundation/tree/0.9.20), source archive SHA-256 `3ddad93f81480d141f15d9b8bdc276a21c5242446c179672c2e787799a423b5e` |
+| libmobi 0.12, Bartek Fabiszewski | LGPL-3.0-or-later | [Pinned revision `90627420`](https://github.com/bfabiszewski/libmobi/tree/906274205c11944b628da1c553b255acb1af7c55), source archive SHA-256 `ec260e472d4db1bcbf8c479ee470bd2a2b2b822f14313604c76e667a684e1dfa` |
+
+ZIPFoundation retains its upstream privacy manifest and uses the system Compression framework. The Leaf additions validate the ZIP central directory, member boundaries, and encryption flags before opening an EPUB archive. This entry point accepts single-disk ZIP32 with stored or deflated members.
+
+The libmobi target builds its reader with system zlib and uses system libxml2 to reconstruct the in-memory book navigation. Its encryption sources are omitted. Leaf changed `opf.c` on 2026-11-20 to remove per-book process-wide XML cleanup so that concurrent parsers can keep using libxml2. The package manifest records the build configuration, and the vendored file headers retain their upstream license and copyright notices.
+
+Keep these license texts and notices with any release and provide the complete corresponding source for the exact build, including the bundled library sources and build instructions. [GNU GPLv3 and LGPLv3 terms](https://www.gnu.org/licenses/lgpl%2Bgpl-3.0-standalone.html)
+
+## Standalone prototypes
+
+The standalone reader prototype fetches the following source and fixtures into the ignored `build/reader-probe/` directory. Its build preserves license texts under `Contents/Resources/Notices/`.
 
 | Component | License | Provenance |
 | --- | --- | --- |

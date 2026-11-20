@@ -14,7 +14,7 @@ enum ReadingError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .unsupportedFormat: String(localized: "Choose a PDF or TXT file.")
+        case .unsupportedFormat: String(localized: "Choose an EPUB, MOBI, AZW3, PDF, or TXT file.")
         case .missingBook: String(localized: "This book is missing from Leaf’s library. Import the original file again.")
         case .invalidPDF: String(localized: "This PDF does not contain any readable pages.")
         case .protectedPDF: String(localized: "Leaf cannot open password-protected or encrypted PDFs.")
@@ -62,10 +62,16 @@ struct PlainText: Sendable {
 }
 
 struct ReadingFile: Sendable {
+    enum Content: Sendable {
+        case pdf
+        case text(PlainText)
+        case ebook(any EbookPublication)
+    }
+
     static let sizeLimit = 64_000_000
 
     let data: Data
-    let text: PlainText?
+    let content: Content
 
     init(url: URL, format: BookFormat) throws {
         let values = try url.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
@@ -75,7 +81,16 @@ struct ReadingFile: Sendable {
         defer { try? handle.close() }
         data = try handle.read(upToCount: Self.sizeLimit + 1) ?? Data()
         guard data.count <= Self.sizeLimit else { throw ReadingError.tooLarge }
-        text = format == .txt ? try PlainText(data: data) : nil
+        switch format {
+        case .pdf:
+            content = .pdf
+        case .txt:
+            content = .text(try PlainText(data: data))
+        case .epub:
+            content = .ebook(try EPUBPublication(data: data))
+        case .mobi, .azw3:
+            content = .ebook(try KindlePublication(data: data))
+        }
     }
 
     static func forImport(_ url: URL) throws -> (book: LibraryBook, file: Self) {
@@ -85,7 +100,13 @@ struct ReadingFile: Sendable {
         let access = url.startAccessingSecurityScopedResource()
         defer { if access { url.stopAccessingSecurityScopedResource() } }
         let source = try Self(url: url, format: format)
-        let title = url.deletingPathExtension().lastPathComponent
+        let fileTitle = url.deletingPathExtension().lastPathComponent
+        let title: String
+        if case .ebook(let publication) = source.content, !publication.title.isEmpty {
+            title = String(publication.title.prefix(512))
+        } else {
+            title = fileTitle
+        }
         let id = LibraryBook.identifier(for: source.data, format: format)
         return (LibraryBook(id: id, title: title, format: format), source)
     }
