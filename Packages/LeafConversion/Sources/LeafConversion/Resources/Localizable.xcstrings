@@ -1,0 +1,106 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Choose a TXT file no larger than 64 MB." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择不超过 64 MB 的 TXT 文件。"
+          }
+        }
+      }
+    },
+    "Choose a destination separate from the original TXT file." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择一个与原 TXT 文件不同的保存位置。"
+          }
+        }
+      }
+    },
+    "Choose a local TXT file to convert." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择要转换的本地 TXT 文件。"
+          }
+        }
+      }
+    },
+    "Choose a regular file ending in .epub as the destination." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择一个以 .epub 结尾的普通文件作为输出。"
+          }
+        }
+      }
+    },
+    "Contents" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目录"
+          }
+        }
+      }
+    },
+    "Section %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 节"
+          }
+        }
+      }
+    },
+    "The TXT file contains a control character that EPUB cannot store." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TXT 文件含有 EPUB 无法保存的控制字符。"
+          }
+        }
+      }
+    },
+    "The TXT file must contain readable UTF-8, UTF-16, or GB18030 text." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TXT 文件必须包含可读取的 UTF-8、UTF-16 或 GB18030 文本。"
+          }
+        }
+      }
+    },
+    "The generated EPUB exceeds Leaf’s 64 MB reading limit." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成的 EPUB 超过了 Leaf 的 64 MB 阅读上限。"
+          }
+        }
+      }
+    },
+    "Untitled" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未命名"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

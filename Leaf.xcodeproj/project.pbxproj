@@ -155,7 +155,7 @@
 			buildConfigurationList = A17000000000000000000018 /* Project configurations */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
-			knownRegions = (en, Base);
+			knownRegions = (en, Base, "zh-Hans");
 			mainGroup = A17000000000000000000008;
 			packageReferences = (
 				A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */,
@@ -257,6 +257,7 @@
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ai.alano.Leaf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Debug;
 		};
@@ -276,6 +277,7 @@
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ai.alano.Leaf;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};

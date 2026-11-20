@@ -140,8 +140,11 @@ func installerBackground(scale: Int) -> CGImage {
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: true)
     centerText("Install Leaf", y: 29, size: 34, weight: .semibold, ink: 0x15372B)
-    centerText("Drag Leaf into Applications", y: 78, size: 17, weight: .medium, ink: 0x3E6253)
-    centerText("Open Leaf from Applications, then eject this disk image.", y: 287,
+    centerText("Drag Leaf into Applications", y: 73, size: 16, weight: .medium, ink: 0x3E6253)
+    centerText("将 Leaf 拖到「应用程序」", y: 96, size: 14, weight: .medium, ink: 0x3E6253)
+    centerText("Open Leaf from Applications, then eject this disk image.", y: 283,
+               size: 13, weight: .medium, ink: 0x345548)
+    centerText("从「应用程序」打开 Leaf，然后推出此磁盘映像。", y: 304,
                size: 13, weight: .medium, ink: 0x345548)
     NSGraphicsContext.restoreGraphicsState()
     return context.makeImage()!

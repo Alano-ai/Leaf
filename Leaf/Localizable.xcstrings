@@ -1,0 +1,569 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Cancel" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "Cancelling…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在取消…"
+          }
+        }
+      }
+    },
+    "Choose Another File…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择其他文件…"
+          }
+        }
+      }
+    },
+    "Choose TXT File…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 TXT 文件…"
+          }
+        }
+      }
+    },
+    "Choose a local TXT file to create an EPUB with a table of contents." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择本地 TXT 文件，生成带目录的 EPUB。"
+          }
+        }
+      }
+    },
+    "Choose an EPUB, MOBI, AZW3, PDF, or TXT file." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择 EPUB、MOBI、AZW3、PDF 或 TXT 文件。"
+          }
+        }
+      }
+    },
+    "Contents" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目录"
+          }
+        }
+      }
+    },
+    "Conversion cancelled." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换已取消。"
+          }
+        }
+      }
+    },
+    "Convert" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换"
+          }
+        }
+      }
+    },
+    "Convert TXT to EPUB" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 TXT 转换为 EPUB"
+          }
+        }
+      }
+    },
+    "Convert to EPUB…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换为 EPUB…"
+          }
+        }
+      }
+    },
+    "Converter" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "格式转换"
+          }
+        }
+      }
+    },
+    "Converting…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在转换…"
+          }
+        }
+      }
+    },
+    "EPUB Saved" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EPUB 已保存"
+          }
+        }
+      }
+    },
+    "Empty Section" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本节没有内容"
+          }
+        }
+      }
+    },
+    "Import Books" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入书籍"
+          }
+        }
+      }
+    },
+    "Import Book…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入书籍…"
+          }
+        }
+      }
+    },
+    "Import an EPUB, MOBI, AZW3, PDF, or TXT file to start reading." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入 EPUB、MOBI、AZW3、PDF 或 TXT 文件，开始阅读。"
+          }
+        }
+      }
+    },
+    "Kindle Book" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kindle 书籍"
+          }
+        }
+      }
+    },
+    "Leaf can import books up to 64 MB." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 只能导入不超过 64 MB 的书籍。"
+          }
+        }
+      }
+    },
+    "Leaf cannot open password-protected or encrypted PDFs." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法打开受密码保护或已加密的 PDF。"
+          }
+        }
+      }
+    },
+    "Leaf cannot read encrypted ebooks or protected resources." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法读取加密电子书或受保护的资源。"
+          }
+        }
+      }
+    },
+    "Leaf couldn’t load its library. %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法加载书库。%@"
+          }
+        }
+      }
+    },
+    "Leaf couldn’t save your reading position. %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法保存阅读位置。%@"
+          }
+        }
+      }
+    },
+    "Leaf supports reflowable ebooks. This book uses an unsupported layout." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 支持可重排版电子书。此书的版式暂不支持。"
+          }
+        }
+      }
+    },
+    "Library" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书库"
+          }
+        }
+      }
+    },
+    "Library Unavailable" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书库不可用"
+          }
+        }
+      }
+    },
+    "Next Page" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一页"
+          }
+        }
+      }
+    },
+    "Next Section" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一节"
+          }
+        }
+      }
+    },
+    "No Book Open" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未打开书籍"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好"
+          }
+        }
+      }
+    },
+    "Opening Book…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在打开书籍…"
+          }
+        }
+      }
+    },
+    "Page %lld of %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %1$lld 页，共 %2$lld 页"
+          }
+        }
+      }
+    },
+    "Previous Page" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一页"
+          }
+        }
+      }
+    },
+    "Previous Section" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一节"
+          }
+        }
+      }
+    },
+    "Reader" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阅读器"
+          }
+        }
+      }
+    },
+    "Reading Position" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阅读进度"
+          }
+        }
+      }
+    },
+    "Section %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 节"
+          }
+        }
+      }
+    },
+    "Section %lld of %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %1$lld 节，共 %2$lld 节"
+          }
+        }
+      }
+    },
+    "Section Unavailable" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本节无法显示"
+          }
+        }
+      }
+    },
+    "Select a book from your library." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从书库中选择一本书。"
+          }
+        }
+      }
+    },
+    "Show Library" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开书库"
+          }
+        }
+      }
+    },
+    "TXT File" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TXT 文件"
+          }
+        }
+      }
+    },
+    "The library catalog contains invalid entries." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书库目录中有无效条目。"
+          }
+        }
+      }
+    },
+    "This PDF does not contain any readable pages." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 PDF 没有可读取的页面。"
+          }
+        }
+      }
+    },
+    "This book contains a section Leaf couldn’t display." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此书中有 Leaf 无法显示的章节。"
+          }
+        }
+      }
+    },
+    "This book is missing from Leaf’s library. Import the original file again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书库中找不到该书。请重新导入原文件。"
+          }
+        }
+      }
+    },
+    "This book’s archive is damaged or uses an unsupported ZIP structure." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书籍压缩包已损坏，或使用了不受支持的 ZIP 结构。"
+          }
+        }
+      }
+    },
+    "This book’s package or reading order couldn’t be read." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取此书的内容清单或阅读顺序。"
+          }
+        }
+      }
+    },
+    "This ebook exceeds Leaf’s reading limits." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此电子书超出了 Leaf 的处理上限。"
+          }
+        }
+      }
+    },
+    "This file does not contain readable UTF-8, UTF-16, or GB18030 text." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此文件没有可读取的 UTF-8、UTF-16 或 GB18030 文本。"
+          }
+        }
+      }
+    },
+    "Untitled EPUB" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未命名的 EPUB"
+          }
+        }
+      }
+    },
+    "Workspaces" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工作区"
+          }
+        }
+      }
+    },
+    "Your Library Is Empty" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书库为空"
+          }
+        }
+      }
+    },
+    "Zoom In" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大"
+          }
+        }
+      }
+    },
+    "Zoom Out" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缩小"
+          }
+        }
+      }
+    },
+    "Leaf" : {
+      "shouldTranslate" : false
+    }
+  },
+  "version" : "1.0"
+}

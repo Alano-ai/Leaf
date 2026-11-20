@@ -28,11 +28,18 @@ struct ConversionIntegrationTests {
             return
         }
         #expect(reading.publication.contents.count > 1)
+        #expect(reading.publication.contents.first?.label == String(localized: "Section \(1)"))
         let final = try await reading.publication.section(at: reading.publication.sectionPaths.count - 1)
         let text = final.blocks.compactMap { block -> String? in
             if case .text(let text, _) = block { String(text.characters) } else { nil }
         }.joined()
         #expect(text.contains("尾声"))
         #expect(try Data(contentsOf: source) == original)
+    }
+
+    @Test func converterErrorsUseTheAppLanguage() {
+        let isSimplifiedChinese = Bundle.main.preferredLocalizations.first == "zh-Hans"
+        let expected = isSimplifiedChinese ? "请选择要转换的本地 TXT 文件。" : "Choose a local TXT file to convert."
+        #expect(TXTToEPUB.ConversionError.unsupportedSource.localizedDescription == expected)
     }
 }

@@ -9,6 +9,10 @@ Download the Apple Silicon DMG from [GitHub Releases](https://github.com/Alano-a
 
 GitHub marks builds without Apple notarization as previews. Gatekeeper may block them on first launch.
 
+## 简体中文
+
+Leaf 的书库、阅读器、格式转换和错误提示支持简体中文。界面跟随 macOS 的语言设置。也可以在「系统设置 → 通用 → 语言与地区 → 应用程序」中为 Leaf 单独选择简体中文，然后重新打开 Leaf。安装镜像提供中英文拖放指引。
+
 ## Read a local book
 
 Choose **Import Book…** in Library or press **⌘O** while Library is selected. Leaf stores its own copy in the app’s private library and opens it in Reader. Importing an identical file reuses the library entry and its reading position. On startup, Leaf reopens the most recent book at its saved page, section, or scroll position.
@@ -48,7 +52,7 @@ The [native reader probe](Prototypes/NativeReader/README.md) evaluates reflowabl
 
 ## Build a DMG
 
-On Apple Silicon, run `bash scripts/package-dmg.sh 0.1.1` to build and verify the disk image in `build/distribution/`. The DMG opens as a Finder volume with an installation guide and an Applications shortcut. The license notices stay with the installed app.
+On Apple Silicon, run `bash scripts/package-dmg.sh 0.1.2` to build and verify the disk image in `build/distribution/`. The DMG opens as a Finder volume with an installation guide and an Applications shortcut. The license notices stay with the installed app.
 
 GitHub Actions runs Xcode and package tests, builds the DMG, and publishes it with the corresponding source and SHA-256 checksums when a version tag is pushed. See the [release guide](docs/releasing.md) for signing and verification.
 

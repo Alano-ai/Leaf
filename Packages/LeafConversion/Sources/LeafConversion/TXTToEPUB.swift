@@ -16,13 +16,13 @@ public enum TXTToEPUB {
 
         public var errorDescription: String? {
             switch self {
-            case .unsupportedSource: String(localized: "Choose a local TXT file to convert.")
-            case .inputTooLarge: String(localized: "Choose a TXT file no larger than 64 MB.")
-            case .invalidText: String(localized: "The TXT file must contain readable UTF-8, UTF-16, or GB18030 text.")
-            case .invalidXMLCharacter: String(localized: "The TXT file contains a control character that EPUB cannot store.")
-            case .invalidDestination: String(localized: "Choose a regular file ending in .epub as the destination.")
-            case .sameFile: String(localized: "Choose a destination separate from the original TXT file.")
-            case .outputTooLarge: String(localized: "The generated EPUB exceeds Leaf’s 64 MB reading limit.")
+            case .unsupportedSource: String(localized: "Choose a local TXT file to convert.", bundle: .module)
+            case .inputTooLarge: String(localized: "Choose a TXT file no larger than 64 MB.", bundle: .module)
+            case .invalidText: String(localized: "The TXT file must contain readable UTF-8, UTF-16, or GB18030 text.", bundle: .module)
+            case .invalidXMLCharacter: String(localized: "The TXT file contains a control character that EPUB cannot store.", bundle: .module)
+            case .invalidDestination: String(localized: "Choose a regular file ending in .epub as the destination.", bundle: .module)
+            case .sameFile: String(localized: "Choose a destination separate from the original TXT file.", bundle: .module)
+            case .outputTooLarge: String(localized: "The generated EPUB exceeds Leaf’s 64 MB reading limit.", bundle: .module)
             }
         }
     }
@@ -52,7 +52,7 @@ public enum TXTToEPUB {
         try validateDestination(destination, source: source)
         let text = try read(source)
         let fileName = source.deletingPathExtension().lastPathComponent
-        let title = fileName.isEmpty ? String(localized: "Untitled") : fileName
+        let title = fileName.isEmpty ? String(localized: "Untitled", bundle: .module) : fileName
         try checkpoint()
 
         let work = temporaryDirectory.appending(path: "LeafConversion-\(UUID().uuidString)", directoryHint: .isDirectory)

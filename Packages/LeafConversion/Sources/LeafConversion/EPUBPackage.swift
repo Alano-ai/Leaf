@@ -24,24 +24,27 @@ enum EPUBPackage {
         let title = try escape(title.unicodeScalars)
         let scalars = text.unicodeScalars
         var start = scalars.startIndex
-        var sectionCount = 0
+        var navigationLinks: [String] = []
         while start < scalars.endIndex {
             try checkpoint()
             let end = nextBoundary(in: scalars, from: start)
             let content = try preformattedContent(scalars[start..<end], checkpoint: checkpoint)
-            sectionCount += 1
-            let sectionTitle = "Section \(sectionCount)"
+            let sectionNumber = navigationLinks.count + 1
+            let label = String(localized: "Section \(sectionNumber)", bundle: .module)
+            let sectionTitle = try escape(label.unicodeScalars)
+            navigationLinks.append("<li><a href=\"section-\(sectionNumber).xhtml\">\(sectionTitle)</a></li>")
             try add(
                 xhtml(title: sectionTitle, body: "<main><h1>\(sectionTitle)</h1><pre>\(content)</pre></main>"),
-                to: archive, at: "EPUB/section-\(sectionCount).xhtml", date: date, checkpoint: checkpoint
+                to: archive, at: "EPUB/section-\(sectionNumber).xhtml", date: date, checkpoint: checkpoint
             )
             start = end
         }
 
-        let sections = 1...sectionCount
-        let links = sections.map { "<li><a href=\"section-\($0).xhtml\">Section \($0)</a></li>" }.joined(separator: "\n")
+        let sections = 1...navigationLinks.count
+        let heading = try escape(String(localized: "Contents", bundle: .module).unicodeScalars)
+        let links = navigationLinks.joined(separator: "\n")
         try add(
-            xhtml(title: "Contents", body: "<nav epub:type=\"toc\" id=\"toc\"><h1>Contents</h1><ol>\(links)</ol></nav>"),
+            xhtml(title: heading, body: "<nav epub:type=\"toc\" id=\"toc\"><h1>\(heading)</h1><ol>\(links)</ol></nav>"),
             to: archive, at: "EPUB/nav.xhtml", date: date, checkpoint: checkpoint
         )
         let manifest = sections.map {

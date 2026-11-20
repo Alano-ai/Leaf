@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "LeafConversion",
+    defaultLocalization: "en",
     platforms: [.macOS("26.0")],
     products: [
         .library(name: "LeafConversion", targets: ["LeafConversion"]),
@@ -15,7 +16,8 @@ let package = Package(
         .target(name: "LeafText"),
         .target(
             name: "LeafConversion",
-            dependencies: ["LeafText", .product(name: "ZIPFoundation", package: "ReaderLibraries")]
+            dependencies: ["LeafText", .product(name: "ZIPFoundation", package: "ReaderLibraries")],
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "LeafConversionTests",
