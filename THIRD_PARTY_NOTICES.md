@@ -2,7 +2,7 @@
 
 ## Leaf application
 
-The application builds and links the pinned sources in [Dependencies/ReaderLibraries](Dependencies/ReaderLibraries). Xcode uses this local Swift package without fetching dependencies. The app bundle includes the third-party license texts under `Contents/Resources/Licenses/` and the GPLv3 text at `Contents/Resources/LICENSE`.
+The application builds and links the pinned sources in [Dependencies/ReaderLibraries](Dependencies/ReaderLibraries). Xcode uses this local Swift package without fetching dependencies. The app bundle includes the third-party license texts under `Contents/Resources/Licenses/`, the GPLv3 text at `Contents/Resources/LICENSE`, and this notice.
 
 | Component | License | Source provenance |
 | --- | --- | --- |

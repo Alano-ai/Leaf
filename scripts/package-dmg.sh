@@ -50,13 +50,7 @@ xcodebuild -project Leaf.xcodeproj -scheme Leaf -configuration Release \
     -destination 'platform=macOS,arch=arm64' -derivedDataPath "$build" \
     ARCHS=arm64 MARKETING_VERSION="$version" build
 
-staging="$work/staging"
-mkdir -p "$staging"
-app="$staging/Leaf.app"
-ditto "$build/Build/Products/Release/Leaf.app" "$app"
-ln -s /Applications "$staging/Applications"
-cp LICENSE THIRD_PARTY_NOTICES.md "$staging/"
-ditto Dependencies/ReaderLibraries/Licenses "$staging/Licenses"
+app="$build/Build/Products/Release/Leaf.app"
 
 if [[ $signed == true ]]; then
     # Keep the imported identity in a disposable keychain.
@@ -81,7 +75,20 @@ fi
 codesign --verify --deep --strict "$app"
 name="Leaf-$version-arm64.dmg"
 dmg="$work/$name"
-hdiutil create -volname "Leaf $version" -srcfolder "$staging" -fs HFS+ -format UDZO "$dmg"
+
+# Preserve the template's volume and background file identities for Finder's bookmark.
+writable="$work/Installer.dmg"
+hdiutil convert Design/Installer.dmg -format UDRW -o "$writable"
+app_kib=$(du -sk "$app" | cut -f 1)
+hdiutil resize -size "$((app_kib + 32 * 1024))k" "$writable"
+mkdir "$mount_point"
+hdiutil attach -nobrowse -noautoopen -mountpoint "$mount_point" "$writable"
+mounted=true
+[[ ! -e "$mount_point/Leaf.app" ]] || fail "The installer template must not contain an app."
+ditto "$app" "$mount_point/Leaf.app"
+hdiutil detach "$mount_point"
+mounted=false
+hdiutil convert "$writable" -format UDZO -o "$dmg"
 
 if [[ $signed == true ]]; then
     codesign --sign "$identity" --keychain "$keychain" --timestamp "$dmg"
@@ -95,7 +102,7 @@ if [[ $signed == true ]]; then
 fi
 
 hdiutil verify "$dmg"
-mkdir "$mount_point"
+mkdir -p "$mount_point"
 hdiutil attach -readonly -nobrowse -noautoopen -mountpoint "$mount_point" "$dmg"
 mounted=true
 mounted_app="$mount_point/Leaf.app"
@@ -104,9 +111,12 @@ codesign --verify --deep --strict "$mounted_app"
 [[ $(plutil -extract CFBundleShortVersionString raw "$mounted_app/Contents/Info.plist") == "$version" ]] \
     || fail "The app version does not match the requested version."
 [[ $(readlink "$mount_point/Applications") == /Applications ]] || fail "The Applications link is missing."
-cmp LICENSE "$mount_point/LICENSE"
-cmp THIRD_PARTY_NOTICES.md "$mount_point/THIRD_PARTY_NOTICES.md"
-diff -r Dependencies/ReaderLibraries/Licenses "$mount_point/Licenses"
+[[ -s "$mount_point/.DS_Store" && -s "$mount_point/.background.tiff" ]] || fail "The Finder installer layout is missing."
+resources="$mounted_app/Contents/Resources"
+[[ -s "$resources/AppIcon.icns" ]] || fail "The app icon is missing."
+cmp LICENSE "$resources/LICENSE"
+cmp THIRD_PARTY_NOTICES.md "$resources/THIRD_PARTY_NOTICES.md"
+diff -r Dependencies/ReaderLibraries/Licenses "$resources/Licenses"
 hdiutil detach "$mount_point"
 mounted=false
 

@@ -3,6 +3,12 @@ A lightweight, native macOS eBook reader and converter built with SwiftUI and Li
 
 Leaf reads local EPUB, MOBI, AZW3, PDF and TXT books offline. It uses a private library without accounts or telemetry. Protected books are outside the supported reading and conversion scope.
 
+## Install Leaf
+
+Download the Apple Silicon DMG from [GitHub Releases](https://github.com/Alano-ai/Leaf/releases) on macOS 26 or later. Open the DMG, drag **Leaf** to **Applications**, then launch Leaf from Applications. Eject the installer disk when finished. If the window stays closed after opening the DMG, select **Install Leaf** in Finder’s sidebar.
+
+GitHub marks builds without Apple notarization as previews. Gatekeeper may block them on first launch.
+
 ## Read a local book
 
 Choose **Import Book…** in Library or press **⌘O** while Library is selected. Leaf stores its own copy in the app’s private library and opens it in Reader. Importing an identical file reuses the library entry and its reading position. On startup, Leaf reopens the most recent book at its saved page, section, or scroll position.
@@ -42,7 +48,7 @@ The [native reader probe](Prototypes/NativeReader/README.md) evaluates reflowabl
 
 ## Build a DMG
 
-On Apple Silicon, run `bash scripts/package-dmg.sh 0.1.0` to build and verify the disk image in `build/distribution/`. The DMG contains Leaf, a shortcut to Applications and the license notices.
+On Apple Silicon, run `bash scripts/package-dmg.sh 0.1.1` to build and verify the disk image in `build/distribution/`. The DMG opens as a Finder volume with an installation guide and an Applications shortcut. The license notices stay with the installed app.
 
 GitHub Actions runs Xcode and package tests, builds the DMG, and publishes it with the corresponding source and SHA-256 checksums when a version tag is pushed. See the [release guide](docs/releasing.md) for signing and verification.
 

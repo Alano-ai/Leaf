@@ -12,6 +12,7 @@
 		A17000000000000000000023 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A17000000000000000000022 /* LICENSE */; };
 		A17000000000000000000028 /* LeafConversion in Frameworks */ = {isa = PBXBuildFile; productRef = A17000000000000000000026 /* LeafConversion */; };
 		A17000000000000000000029 /* LeafText in Frameworks */ = {isa = PBXBuildFile; productRef = A17000000000000000000027 /* LeafText */; };
+		A1700000000000000000002B /* THIRD_PARTY_NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = A1700000000000000000002A /* THIRD_PARTY_NOTICES.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +30,7 @@
 		A17000000000000000000003 /* LeafTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = LeafTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A17000000000000000000020 /* Licenses */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Licenses; path = Dependencies/ReaderLibraries/Licenses; sourceTree = "<group>"; };
 		A17000000000000000000022 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		A1700000000000000000002A /* THIRD_PARTY_NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = THIRD_PARTY_NOTICES.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -72,6 +74,7 @@
 				A17000000000000000000005 /* LeafTests */,
 				A17000000000000000000020 /* Licenses */,
 				A17000000000000000000022 /* LICENSE */,
+				A1700000000000000000002A /* THIRD_PARTY_NOTICES.md */,
 				A17000000000000000000009 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -176,6 +179,7 @@
 			files = (
 				A17000000000000000000021 /* Licenses in Resources */,
 				A17000000000000000000023 /* LICENSE in Resources */,
+				A1700000000000000000002B /* THIRD_PARTY_NOTICES.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +245,7 @@
 		A17000000000000000000014 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Leaf/Leaf.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -258,6 +263,7 @@
 		A17000000000000000000015 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Leaf/Leaf.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;

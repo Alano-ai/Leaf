@@ -4,14 +4,14 @@ GitHub Actions tests the shared Xcode scheme and the two Swift packages on Apple
 
 ## Prepare a release
 
-Start from a reviewed commit that passed the macOS workflow. For example, to release version 0.1.0, create and push the tag from that commit.
+Start from a reviewed commit that passed the macOS workflow. For example, to release version 0.1.1, create and push the tag from that commit.
 
 ```sh
-git tag -a v0.1.0 -m "Leaf 0.1.0"
-git push origin v0.1.0
+git tag -a v0.1.1 -m "Leaf 0.1.1"
+git push origin refs/tags/v0.1.1
 ```
 
-The tag sets the app version. The release includes `Leaf-0.1.0-arm64.dmg`, `Leaf-0.1.0-source.tar.gz` and `SHA256SUMS`. The source archive comes from the commit that produced the app and includes the vendored sources and build scripts. The DMG includes Leaf, an Applications shortcut and the license notices. If a release already exists for the tag, the workflow will fail rather than replace its assets.
+The tag sets the app version. The release includes `Leaf-0.1.1-arm64.dmg`, `Leaf-0.1.1-source.tar.gz` and `SHA256SUMS`. The source archive comes from the commit that produced the app and includes the vendored sources and build scripts. The DMG presents Leaf and an Applications shortcut in a Finder window. The app bundle contains the license notices. Each version tag publishes a new release with its own assets.
 
 ## Signing and notarization
 
@@ -29,4 +29,6 @@ The packaging script imports the identity into a temporary keychain, signs the a
 
 ## Check the published release
 
-Download the three release assets to the same folder and run `shasum -a 256 -c SHA256SUMS`. On a clean Apple Silicon Mac running macOS 26 or later, open the downloaded DMG, drag Leaf to Applications and launch it. For a notarized release, confirm that Gatekeeper accepts a normal first launch and run `xcrun stapler validate Leaf-0.1.0-arm64.dmg` to check the attached ticket.
+Download the three release assets to the same folder and run `shasum -a 256 -c SHA256SUMS`. On a clean Apple Silicon Mac running macOS 26 or later, open the downloaded DMG, check that Finder shows the drag-to-Applications window, then copy and launch Leaf. For a notarized release, confirm that Gatekeeper accepts a normal first launch and run `xcrun stapler validate Leaf-0.1.1-arm64.dmg` to check the attached ticket.
+
+The checked-in [installer design](../Design/README.md) lets CI package the Finder layout with native macOS utilities.

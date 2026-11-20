@@ -11,6 +11,7 @@ xcuserdata/
 /DerivedData/
 *.xcresult
 *.dmg
+!/Design/Installer.dmg
 
 ## Obj-C/Swift specific
 *.hmap
