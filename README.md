@@ -20,6 +20,8 @@ To verify the shell, launch Leaf and confirm that Library is selected. Navigate 
 
 See [architecture and milestones](docs/architecture.md) for feature scope and acceptance criteria.
 
+The [standalone reader prototype](Prototypes/Reader/README.md) exercises the five planned file formats. Its [engine evaluation](docs/reader-engine-evaluation.md) records the integration decisions.
+
 ## License
 
 Leaf is licensed under [GPL-3.0-only](LICENSE).

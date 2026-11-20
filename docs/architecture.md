@@ -18,6 +18,8 @@ As features arrive, the library will own local file references and saved reading
 
 **Acceptance.** Exercise unprotected EPUB, MOBI and AZW3 in a local WebKit prototype. Check chapter navigation, pagination, local images and fonts, and offline behavior. Verify PDF paging and zoom in PDFKit and TXT encoding and scrolling in SwiftUI. Record first-page latency, page-turn latency and peak memory on Apple Silicon with representative small and large files. Check that malformed inputs fail safely, book code cannot access external resources or privileged native APIs, and encrypted ebooks are rejected. Review the selected upstream revision, bundled code and notices for GPL-3.0-only distribution and document the measurements and go/no-go decision before integration.
 
+See the [standalone prototype](../Prototypes/Reader/README.md) and [engine evaluation](reader-engine-evaluation.md).
+
 ## 3. Local library and reading
 
 **Deliverable.** Add local import, library persistence, resume position and the approved rendering paths for EPUB, MOBI, AZW3, PDF and TXT.

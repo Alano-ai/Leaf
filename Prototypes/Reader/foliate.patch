@@ -1,0 +1,36 @@
+--- paginator.js
++++ paginator.js
+@@ -241,7 +241,5 @@
+         })
+-        // `allow-scripts` is needed for events because of WebKit bug
+-        // https://bugs.webkit.org/show_bug.cgi?id=218086
+-        this.#iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts')
++        this.#iframe.setAttribute('sandbox', 'allow-same-origin')
+         this.#iframe.setAttribute('scrolling', 'no')
+     }
+     get element() {
+--- fixed-layout.js
++++ fixed-layout.js
+@@ -83,7 +83,5 @@
+         })
+-        // `allow-scripts` is needed for events because of WebKit bug
+-        // https://bugs.webkit.org/show_bug.cgi?id=218086
+-        iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts')
++        iframe.setAttribute('sandbox', 'allow-same-origin')
+         iframe.setAttribute('scrolling', 'no')
+         iframe.setAttribute('part', 'filter')
+         this.#root.append(element)
+--- mobi.js
++++ mobi.js
+@@ -524,4 +524,5 @@
+         this.headers = this.#getHeaders(await super.loadRecord(0))
++        if (this.headers.palmdoc.encryption) throw new Error('Protected MOBI/KF8 is unsupported')
+         this.#resourceStart = this.headers.mobi.resourceStart
+         let isKF8 = this.headers.mobi.version >= 8
+         if (!isKF8) {
+@@ -539,4 +540,5 @@
+         }
++        if (this.headers.palmdoc.encryption) throw new Error('Protected MOBI/KF8 is unsupported')
+         await this.#setup()
+         return isKF8 ? new KF8(this).init() : new MOBI6(this).init()
+     }
