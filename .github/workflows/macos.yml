@@ -111,15 +111,30 @@ jobs:
           fi
           version=${GITHUB_REF_NAME#v}
           assets=("Leaf-$version-arm64.dmg" "Leaf-$version-source.tar.gz" SHA256SUMS)
-          if [[ $NOTARIZED == true ]]; then
-            gh release create "$GITHUB_REF_NAME" "${assets[@]}" --repo "$GITHUB_REPOSITORY" \
-              --verify-tag --title "Leaf $GITHUB_REF_NAME" --generate-notes
-          elif [[ $NOTARIZED == false ]]; then
-            gh release create "$GITHUB_REF_NAME" "${assets[@]}" --repo "$GITHUB_REPOSITORY" \
-              --verify-tag --title "Leaf $GITHUB_REF_NAME Preview" --prerelease --latest=false \
-              --notes "Ad-hoc signed preview for Apple Silicon on macOS 26 or later. macOS Gatekeeper may block the download. The source archive contains the exact build inputs." \
-              --generate-notes
-          else
+          if [[ $NOTARIZED != true && $NOTARIZED != false ]]; then
             echo "The build did not report its notarization status." >&2
             exit 1
           fi
+
+          title="Leaf $GITHUB_REF_NAME"
+          release_flags=(--latest)
+          if [[ $version == 0.* && $NOTARIZED == false ]]; then
+            title="$title Preview"
+            release_flags=(--prerelease --latest=false)
+          fi
+
+          notes=$(mktemp)
+          trap 'rm -f "$notes"' EXIT
+          ref="repos/$GITHUB_REPOSITORY/git/ref/tags/$GITHUB_REF_NAME"
+          tag_object=$(gh api "$ref" --jq 'if .object.type == "tag" then .object.sha else "" end')
+          if [[ -n $tag_object ]]; then
+            gh api "repos/$GITHUB_REPOSITORY/git/tags/$tag_object" --jq .message > "$notes"
+          fi
+          printf '\n## Download\n\n' >> "$notes"
+          printf '%s\n' 'For Apple Silicon Macs running macOS 26 or later. The DMG contains a drag-to-Applications installer. The source archive contains the exact build inputs.' >> "$notes"
+          if [[ $NOTARIZED == false ]]; then
+            printf '\n%s\n' '本构建采用临时签名，尚未经过 Apple 公证。首次打开时，macOS Gatekeeper 可能会阻止启动。' >> "$notes"
+            printf '\n%s\n' 'This build is ad-hoc signed. Apple notarization has not been applied, so macOS Gatekeeper may block the first launch.' >> "$notes"
+          fi
+          gh release create "$GITHUB_REF_NAME" "${assets[@]}" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --title "$title" --notes-file "$notes" --generate-notes "${release_flags[@]}"

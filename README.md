@@ -7,7 +7,7 @@ Leaf reads local EPUB, MOBI, AZW3, PDF and TXT books offline. It uses a private 
 
 Download the Apple Silicon DMG from [GitHub Releases](https://github.com/Alano-ai/Leaf/releases) on macOS 26 or later. Open the DMG, drag **Leaf** to **Applications**, then launch Leaf from Applications. Eject the installer disk when finished. If the window stays closed after opening the DMG, select **Install Leaf** in Finder’s sidebar.
 
-GitHub marks builds without Apple notarization as previews. Gatekeeper may block them on first launch.
+For ad-hoc signed downloads, macOS Gatekeeper may block the first launch. The release notes record the build's Apple notarization status.
 
 ## 简体中文
 
@@ -22,7 +22,7 @@ Leaf 的书库、阅读器、格式转换和错误提示支持简体中文。界
 Drop files onto the bookshelf, choose **Import Books…**, or press **⌘O** in any library view. Leaf stores a private copy of each book. A single import opens in Reader. The sidebar provides All Books, Recently Read and Favorites. The book context menu provides conversion, renaming and file information. On startup, Leaf reopens the most recent book at its saved page, section, or scroll position.
 
 - EPUB, MOBI and AZW3 use native reflowable text with section navigation, tables of contents, internal links and supported local raster images. Leaf applies its own typography. Fixed-layout books and EPUB font-obfuscation manifests are outside this reader’s scope.
-- Reader defaults to a single page that fits the window. Scrolling and two-page layouts are available in Reading Appearance. Reflowable books have white, paper and dark backgrounds and adjustable font, size, line spacing and margins. PDF keeps its page artwork and offers page navigation and zoom. TXT supports UTF-8, BOM-marked UTF-16 and GB18030.
+- Reader defaults to a single page that fits the window. Use the toolbar arrows to turn pages. Scrolling and two-page layouts are available in Reading Appearance. Reflowable books have white, paper and dark backgrounds and adjustable font, size, line spacing and margins. PDF keeps its page artwork and offers page navigation and zoom. TXT supports UTF-8, BOM-marked UTF-16 and GB18030.
 - The import limit is 64 MB per file.
 
 ## Convert between formats
@@ -58,7 +58,7 @@ The [native reader probe](Prototypes/NativeReader/README.md) evaluates reflowabl
 
 ## Build a DMG
 
-On Apple Silicon, run `bash scripts/package-dmg.sh 0.1.2` to build and verify the disk image in `build/distribution/`. The DMG opens as a Finder volume with an installation guide and an Applications shortcut. The license notices stay with the installed app.
+On Apple Silicon, run `bash scripts/package-dmg.sh 1.0.0` to build and verify the disk image in `build/distribution/`. The DMG opens as a Finder volume with an installation guide and an Applications shortcut. The license notices stay with the installed app.
 
 GitHub Actions runs Xcode and package tests, builds the DMG, and publishes it with the corresponding source and SHA-256 checksums when a version tag is pushed. See the [release guide](docs/releasing.md) for signing and verification.
 

@@ -4,18 +4,18 @@ GitHub Actions tests the shared Xcode scheme and the two Swift packages on Apple
 
 ## Prepare a release
 
-Start from a reviewed commit that passed the macOS workflow. For example, to release version 0.1.1, create and push the tag from that commit.
+Start from a reviewed commit. The tag workflow must pass before publication. For example, to release version 1.0.0, create and push an annotated tag from that commit. The tag message appears in the Release notes.
 
 ```sh
-git tag -a v0.1.1 -m "Leaf 0.1.1"
-git push origin refs/tags/v0.1.1
+git tag -a v1.0.0 -F release-notes.md
+git push origin refs/tags/v1.0.0
 ```
 
-The tag sets the app version. The release includes `Leaf-0.1.1-arm64.dmg`, `Leaf-0.1.1-source.tar.gz` and `SHA256SUMS`. The source archive comes from the commit that produced the app and includes the vendored sources and build scripts. The DMG presents Leaf and an Applications shortcut in a Finder window. The app bundle contains the license notices. Each version tag publishes a new release with its own assets.
+The tag sets the app version. The release includes `Leaf-1.0.0-arm64.dmg`, `Leaf-1.0.0-source.tar.gz` and `SHA256SUMS`. The source archive comes from the commit that produced the app and includes the vendored sources and build scripts. The DMG presents Leaf and an Applications shortcut in a Finder window. The app bundle contains the license notices. Each version tag publishes a new release with its own assets.
 
 ## Signing and notarization
 
-With no signing secrets configured, the tag produces an ad-hoc signed preview. Gatekeeper may block downloaded previews. To publish notarized builds, configure all five GitHub Actions secrets in the repository.
+The workflow publishes versions 1.0.0 and later as regular GitHub Releases. Ad-hoc signed 0.x builds are previews. The release notes report whether Apple notarization was applied. Gatekeeper may block downloaded ad-hoc signed builds on first launch. To publish notarized builds, configure all five GitHub Actions secrets in the repository.
 
 | Secret | Value |
 | --- | --- |
@@ -29,6 +29,6 @@ The packaging script imports the identity into a temporary keychain, signs the a
 
 ## Check the published release
 
-Download the three release assets to the same folder and run `shasum -a 256 -c SHA256SUMS`. On a clean Apple Silicon Mac running macOS 26 or later, open the downloaded DMG, check that Finder shows the drag-to-Applications window, then copy and launch Leaf. For a notarized release, confirm that Gatekeeper accepts a normal first launch and run `xcrun stapler validate Leaf-0.1.1-arm64.dmg` to check the attached ticket.
+Download the three release assets to the same folder and run `shasum -a 256 -c SHA256SUMS`. On a clean Apple Silicon Mac running macOS 26 or later, open the downloaded DMG, check that Finder shows the drag-to-Applications window, then copy and launch Leaf. For a notarized release, confirm that Gatekeeper accepts a normal first launch and run `xcrun stapler validate Leaf-1.0.0-arm64.dmg` to check the attached ticket.
 
 The checked-in [installer design](../Design/README.md) lets CI package the Finder layout with native macOS utilities.
