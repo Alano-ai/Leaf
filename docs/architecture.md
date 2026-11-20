@@ -4,7 +4,7 @@ Leaf is a local macOS app with a SwiftUI window and three workspaces. `LeafApp` 
 
 Use the current stable macOS SDK and the Swift 6 language mode. macOS 26 is the deployment floor because its system controls provide Liquid Glass. The window, sidebar, and toolbar use system styles. Detail content follows the system appearance and uses the standard content surface. See [Apple’s Liquid Glass adoption guidance](https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass).
 
-As features arrive, the library will own local file references and saved reading positions. Readers consume a local source and expose format-appropriate navigation. Conversion will have its own module and UI, accept a source file and an output destination, and run independently of the library and reader. Add storage and format-specific interfaces when a feature needs them.
+The library stores managed copies and a small JSON catalog in Application Support. Each entry uses a format and content hash to identify its copy. Leaf validates a selected file before storing it, writes the copy before publishing the catalog entry, and replaces the catalog atomically. Readers save format-specific positions in the catalog. Conversion will have its own module and UI, accept a source file and an output destination, and run independently of the library and reader.
 
 ## 1. Native application shell
 
@@ -25,6 +25,10 @@ See the [standalone prototype](../Prototypes/Reader/README.md) and [engine evalu
 **Deliverable.** Add local import, library persistence, resume position and the approved rendering paths for EPUB, MOBI, AZW3, PDF and TXT.
 
 **Acceptance.** Open all five formats offline via the library. Reopening Leaf restores the library and reading position. Missing, malformed, unsupported and protected files show a clear error. Recheck runtime performance against the prototype results.
+
+The PDF and TXT increment is implemented. Leaf uses PDFKit for PDF pages and zoom, and SwiftUI scroll targets for TXT. The app requests read-only access to files selected for import. The remaining three formats are subject to the [WebKit integration decision](reader-engine-evaluation.md#integration-decision).
+
+On the evaluation Mac, a Release-mode check reused the 320-page PDF and 2.67 MiB TXT fixtures. Across five warmed runs, the median import and catalog restore times were 1.03 ms and 0.26 ms for PDF, and 77.79 ms and 75.09 ms for TXT. Prototype input and document preparation took 0.16 ms and 70.85 ms respectively. These measurements stop before view layout. The separate desktop check confirmed that the PDF page and TXT scroll position restored after quitting and relaunching.
 
 ## 4. Independent conversion
 

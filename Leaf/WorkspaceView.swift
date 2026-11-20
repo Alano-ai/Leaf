@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct WorkspaceView: View {
     @State private var workspace = Workspace()
+    @State private var library = LibraryModel()
+    @State private var importing = false
 
     private var sidebarSelection: Binding<Workspace?> {
         Binding(
@@ -24,31 +27,110 @@ struct WorkspaceView: View {
         } detail: {
             detail
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .navigationTitle(workspace.title)
+                .navigationTitle(title)
         }
+        .toolbar {
+            if workspace == .library {
+                Button("Import Books", systemImage: "plus") { importing = true }
+                    .keyboardShortcut("o")
+                    .disabled(!library.ready || library.busy)
+            }
+        }
+        .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .plainText]) { result in
+            switch result {
+            case .success(let url):
+                Task {
+                    if await library.importBook(at: url) { workspace = .reader }
+                }
+            case .failure(let error):
+                library.message = error.localizedDescription
+            }
+        }
+        .alert("Leaf", isPresented: Binding(
+            get: { library.message != nil },
+            set: { if !$0 { library.message = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(library.message ?? "")
+        }
+        .task {
+            if await library.restore() { workspace = .reader }
+        }
+    }
+
+    private var title: Text {
+        if workspace == .reader, let book = library.session?.book {
+            return Text(verbatim: book.title)
+        }
+        return Text(workspace.title)
     }
 
     @ViewBuilder
     private var detail: some View {
         switch workspace {
         case .library:
-            ContentUnavailableView(
-                "Your Library Is Empty",
-                systemImage: "books.vertical",
-                description: Text("Books you add will appear here.")
-            )
+            libraryView
         case .reader:
-            ContentUnavailableView(
-                "No Book Open",
-                systemImage: "book",
-                description: Text("Books open here when you select them from your library.")
-            )
+            if let session = library.session {
+                ReaderView(session: session, library: library)
+                    .id(session.book.id)
+            } else {
+                ContentUnavailableView {
+                    Label("No Book Open", systemImage: "book")
+                } description: {
+                    Text("Select a PDF or TXT book from your library.")
+                } actions: {
+                    Button("Show Library") { workspace = .library }
+                }
+            }
         case .converter:
             ContentUnavailableView(
                 "Format Conversion",
                 systemImage: "arrow.left.arrow.right",
                 description: Text("Conversion will be available in a later release.")
             )
+        }
+    }
+
+    @ViewBuilder
+    private var libraryView: some View {
+        if library.busy {
+            ProgressView("Opening Book…")
+        } else if !library.ready {
+            ContentUnavailableView("Library Unavailable", systemImage: "books.vertical")
+        } else if library.books.isEmpty {
+            ContentUnavailableView {
+                Label("Your Library Is Empty", systemImage: "books.vertical")
+            } description: {
+                Text("Import a PDF or TXT file to start reading.")
+            } actions: {
+                Button("Import Book…") { importing = true }
+            }
+        } else {
+            List(library.books) { book in
+                Button {
+                    Task {
+                        if await library.open(book) { workspace = .reader }
+                    }
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: book.format == .pdf ? "book.closed" : "doc.text")
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                        Text(verbatim: book.title)
+                            .lineLimit(1)
+                        Spacer()
+                        Text(book.format.label)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 6)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            .listStyle(.inset)
         }
     }
 }
