@@ -1,6 +1,6 @@
 # Releasing Leaf
 
-GitHub Actions tests the shared Xcode scheme and the two Swift packages on Apple Silicon with Xcode 27.2. Pull requests, pushes to `main` and manual branch runs upload a DMG for testing. A push of a `vMAJOR.MINOR.PATCH` tag also publishes a GitHub Release. [GitHub runner image and Xcode versions](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md#xcode)
+GitHub Actions tests the shared Xcode scheme and the two Swift packages on Apple Silicon with Xcode 27.2. Pull requests, pushes to `main` and manual branch runs upload a DMG for testing. Pushing a `vMAJOR.MINOR.PATCH` or `vMAJOR.MINOR.PATCH-beta.N` tag also publishes a GitHub Release. [GitHub runner image and Xcode versions](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md#xcode)
 
 ## Prepare a release
 
@@ -11,11 +11,13 @@ git tag -a v1.0.0 -F release-notes.md
 git push origin refs/tags/v1.0.0
 ```
 
-The tag sets the app version. The release includes `Leaf-1.0.0-arm64.dmg`, `Leaf-1.0.0-source.tar.gz` and `SHA256SUMS`. The source archive comes from the commit that produced the app and includes the vendored sources and build scripts. The DMG presents Leaf and an Applications shortcut in a Finder window. The app bundle contains the license notices. Each version tag publishes a new release with its own assets.
+The numeric part of the tag sets the app version. The release includes `Leaf-1.0.0-arm64.dmg`, `Leaf-1.0.0-source.tar.gz` and `SHA256SUMS`. The source archive comes from the commit that produced the app and includes the vendored sources and build scripts. The DMG presents Leaf and an Applications shortcut in a Finder window. The app bundle contains the license notices. Each version tag publishes a new release with its own assets.
+
+For a test release, use an annotated tag such as `v1.1.0-beta.1`. GitHub marks it as a pre-release. The DMG and source archive names include the beta suffix, and the app version is `1.1.0`.
 
 ## Signing and notarization
 
-The workflow publishes versions 1.0.0 and later as regular GitHub Releases. Ad-hoc signed 0.x builds are previews. The release notes report whether Apple notarization was applied. Gatekeeper may block downloaded ad-hoc signed builds on first launch. To publish notarized builds, configure all five GitHub Actions secrets in the repository.
+The workflow publishes stable tags from 1.0.0 onward as regular GitHub Releases. Beta tags and ad-hoc signed 0.x builds are previews. The release notes report whether Apple notarization was applied. Gatekeeper may block downloaded ad-hoc signed builds on first launch. To publish notarized builds, configure all five GitHub Actions secrets in the repository.
 
 | Secret | Value |
 | --- | --- |

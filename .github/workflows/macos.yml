@@ -40,9 +40,9 @@ jobs:
           if [[ -n $RELEASE_TAG ]]; then
             version=${RELEASE_TAG#v}
           fi
-          pattern='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          pattern='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-beta\.[1-9][0-9]*)?$'
           if [[ ! $version =~ $pattern ]]; then
-            echo "Release tags must use vMAJOR.MINOR.PATCH." >&2
+            echo "Release tags must use vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-beta.N." >&2
             exit 1
           fi
           printf 'version=%s\ncommit=%s\n' "$version" "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -118,7 +118,7 @@ jobs:
 
           title="Leaf $GITHUB_REF_NAME"
           release_flags=(--latest)
-          if [[ $version == 0.* && $NOTARIZED == false ]]; then
+          if [[ $version == *-beta.* || ( $version == 0.* && $NOTARIZED == false ) ]]; then
             title="$title Preview"
             release_flags=(--prerelease --latest=false)
           fi

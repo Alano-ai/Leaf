@@ -9,8 +9,9 @@ fail() {
 
 version=${1:-}
 output=${2:-build/distribution}
-version_pattern='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
-[[ $# -le 2 && $version =~ $version_pattern ]] || fail "Usage: bash scripts/package-dmg.sh MAJOR.MINOR.PATCH [output-directory]"
+version_pattern='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-beta\.[1-9][0-9]*)?$'
+[[ $# -le 2 && $version =~ $version_pattern ]] || fail "Usage: bash scripts/package-dmg.sh MAJOR.MINOR.PATCH[-beta.N] [output-directory]"
+app_version=${version%%-*}
 [[ $(uname -m) == arm64 ]] || fail "Run this script on an Apple Silicon Mac."
 
 cd "$(dirname "$0")/.."
@@ -48,7 +49,7 @@ trap 'exit 143' TERM
 build="$work/DerivedData"
 xcodebuild -project Leaf.xcodeproj -scheme Leaf -configuration Release \
     -destination 'platform=macOS,arch=arm64' -derivedDataPath "$build" \
-    ARCHS=arm64 MARKETING_VERSION="$version" build
+    ARCHS=arm64 MARKETING_VERSION="$app_version" build
 
 app="$build/Build/Products/Release/Leaf.app"
 
@@ -108,7 +109,7 @@ mounted=true
 mounted_app="$mount_point/Leaf.app"
 codesign --verify --deep --strict "$mounted_app"
 [[ $(lipo -archs "$mounted_app/Contents/MacOS/Leaf") == arm64 ]] || fail "The app must contain an arm64 executable."
-[[ $(plutil -extract CFBundleShortVersionString raw "$mounted_app/Contents/Info.plist") == "$version" ]] \
+[[ $(plutil -extract CFBundleShortVersionString raw "$mounted_app/Contents/Info.plist") == "$app_version" ]] \
     || fail "The app version does not match the requested version."
 [[ $(readlink "$mount_point/Applications") == /Applications ]] || fail "The Applications link is missing."
 [[ -s "$mount_point/.DS_Store" && -s "$mount_point/.background.tiff" ]] || fail "The Finder installer layout is missing."
