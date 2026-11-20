@@ -40,6 +40,12 @@ The [standalone reader prototype](Prototypes/Reader/README.md) exercises the fiv
 
 The [native reader probe](Prototypes/NativeReader/README.md) evaluates reflowable EPUB and Kindle decoding under the local-first design.
 
+## Build a DMG
+
+On Apple Silicon, run `bash scripts/package-dmg.sh 0.1.0` to build and verify the disk image in `build/distribution/`. The DMG contains Leaf, a shortcut to Applications and the license notices.
+
+GitHub Actions runs Xcode and package tests, builds the DMG, and publishes it with the corresponding source and SHA-256 checksums when a version tag is pushed. See the [release guide](docs/releasing.md) for signing and verification.
+
 ## License
 
 Leaf is licensed under [GPL-3.0-only](LICENSE).

@@ -63,3 +63,7 @@ Six standalone conversion tests and 22 Xcode tests passed on Apple Silicon. The 
 **Deliverable.** Use GitHub Actions to build and test on Apple Silicon, then package version tags into DMGs and attach them to GitHub Releases. Configure Developer ID signing and notarization when credentials are available for public distribution.
 
 **Acceptance.** CI builds the app and passes the test suite on a supported stable Xcode. A tagged run produces a DMG containing the versioned app and publishes the matching source and required license notices with the release. Verify that the distributed app launches from a clean supported Mac and, for signed distribution, that Gatekeeper accepts it.
+
+The [macOS workflow](../.github/workflows/macos.yml) tests the app and both Swift packages on the Apple Silicon Xcode 27 runner. The build job checks the mounted DMG and uploads it with the source archive and checksums. A separate job publishes these assets only for a version tag push. Developer ID signing and notarization are optional for previews. See the [release guide](releasing.md).
+
+Local verification with Xcode 27.2 passed all 32 tests. The preview image mounted successfully, contained the arm64 app at the requested version and preserved the license notices. A copy from the image launched under an isolated bundle identifier. The first hosted release and Gatekeeper check on a clean Mac remain pending.
