@@ -12,6 +12,8 @@ The evaluation ran on 2026-11-20 on an Apple M2 with 8 GiB RAM, macOS 27.2.1 (26
 
 The executable with the same network-free sandbox as Leaf failed before rendering the local EPUB shell. WebKit reported that the application lacked permission to communicate with network resources. Adding `com.apple.security.network.client` to a separate comparison bundle allowed the local scheme to load. This entitlement permits outgoing connections at the OS level. The prototype validates resource blocking at the renderer level. Before integrating, decide whether an offline renderer can meet Leaf’s distribution model with that entitlement, or evaluate a non-WebKit rendering path. [Apple’s network-client entitlement](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.network.client)
 
+The follow-up [native ebook evaluation](native-reader-evaluation.md) covers reflowable EPUB under Leaf’s current sandbox and a separate MOBI/KF8 decoder.
+
 ## Format and isolation checks
 
 - Reflowable and fixed-layout EPUB exercised first-page rendering, page turns, table-of-contents jumps, local images and embedded fonts. A fixed-layout jump is checked against the actual visible page because the location of a two-page spread can be reported as its leading page.

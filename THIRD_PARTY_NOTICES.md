@@ -13,3 +13,11 @@ The standalone reader prototype fetches the following source and fixtures into t
 The prototype uses foliate-js’s checked-in zip.js and fflate bundles. The versions listed above are from the pinned upstream lockfile. The ZIP bundle includes the SJCL codec, which is why its notice is included. `foliate.patch` changes the iframe sandbox on both layout paths and adds protected-book rejection to the MOBI/KF8 parser.
 
 The libmobi sample books are downloaded for local verification only. Production distribution should omit test books and fonts, preserve the license and copyright notices for included code, and make the corresponding source and build inputs available for the exact release. [Pinned libmobi fixtures](https://github.com/bfabiszewski/libmobi/tree/906274205c11944b628da1c553b255acb1af7c55/tests/samples) · [GNU GPLv3 distribution terms](https://www.gnu.org/licenses/gpl-3.0.html)
+
+The [native reader probe](Prototypes/NativeReader/README.md) also stages the following materials under `build/native-reader/`.
+
+| Component | License or terms | Provenance |
+| --- | --- | --- |
+| ZIPFoundation 0.9.20 | MIT, Thomas Zoechling | [Pinned release source and license](https://github.com/weichsel/ZIPFoundation/tree/0.9.20) |
+| libmobi 0.12 | LGPL-3.0-or-later, Bartek Fabiszewski | [Pinned source and COPYING](https://github.com/bfabiszewski/libmobi/tree/906274205c11944b628da1c553b255acb1af7c55) |
+| Accessible EPUB 3 and Internal Links | IDPF sample publications used for local evaluation. Retain the notices in their package metadata. | [Sample descriptions and licensing](https://idpf.github.io/epub3-samples/30/samples.html) |

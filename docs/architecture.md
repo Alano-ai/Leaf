@@ -26,7 +26,7 @@ See the [standalone prototype](../Prototypes/Reader/README.md) and [engine evalu
 
 **Acceptance.** Open all five formats offline via the library. Reopening Leaf restores the library and reading position. Missing, malformed, unsupported and protected files show a clear error. Recheck runtime performance against the prototype results.
 
-The PDF and TXT increment is implemented. Leaf uses PDFKit for PDF pages and zoom, and SwiftUI scroll targets for TXT. The app requests read-only access to files selected for import. The remaining three formats are subject to the [WebKit integration decision](reader-engine-evaluation.md#integration-decision).
+The PDF and TXT increment is implemented. Leaf uses PDFKit for PDF pages and zoom, and SwiftUI scroll targets for TXT. The app requests read-only access to files selected for import. The [native reader evaluation](native-reader-evaluation.md) recommends a scoped reflowable EPUB integration and identifies libmobi as a candidate for the remaining Kindle formats. The [WebKit integration decision](reader-engine-evaluation.md#integration-decision) remains on hold.
 
 On the evaluation Mac, a Release-mode check reused the 320-page PDF and 2.67 MiB TXT fixtures. Across five warmed runs, the median import and catalog restore times were 1.03 ms and 0.26 ms for PDF, and 77.79 ms and 75.09 ms for TXT. Prototype input and document preparation took 0.16 ms and 70.85 ms respectively. These measurements stop before view layout. The separate desktop check confirmed that the PDF page and TXT scroll position restored after quitting and relaunching.
 

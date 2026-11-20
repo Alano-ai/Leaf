@@ -28,6 +28,8 @@ See [architecture and milestones](docs/architecture.md) for feature scope and ac
 
 The [standalone reader prototype](Prototypes/Reader/README.md) exercises the five planned file formats. Its [engine evaluation](docs/reader-engine-evaluation.md) records the integration decisions.
 
+The [native reader probe](Prototypes/NativeReader/README.md) evaluates reflowable EPUB and Kindle decoding under the local-first design.
+
 ## License
 
 Leaf is licensed under [GPL-3.0-only](LICENSE).
