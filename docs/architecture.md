@@ -4,7 +4,7 @@ Leaf is a local macOS app with a SwiftUI window and three workspaces. `LeafApp` 
 
 Use the current stable macOS SDK and the Swift 6 language mode. macOS 26 is the deployment floor because its system controls provide Liquid Glass. The window, sidebar, and toolbar use system styles. Detail content follows the system appearance and uses the standard content surface. See [Apple’s Liquid Glass adoption guidance](https://developer.apple.com/documentation/TechnologyOverviews/adopting-liquid-glass).
 
-The library stores managed copies and a small JSON catalog in Application Support. Each entry uses a format and content hash to identify its copy. Leaf validates a selected file before storing it, writes the copy before publishing the catalog entry, and replaces the catalog atomically. Readers save format-specific positions in the catalog. Conversion will have its own module and UI, accept a source file and an output destination, and run independently of the library and reader.
+The library stores managed copies and a small JSON catalog in Application Support. Each entry uses a format and content hash to identify its copy. Leaf validates a selected file before storing it, writes the copy before publishing the catalog entry, and replaces the catalog atomically. Readers save format-specific positions in the catalog. The converter uses its own workspace and package, with a shared TXT decoder.
 
 ## 1. Native application shell
 
@@ -26,7 +26,7 @@ See the [standalone prototype](../Prototypes/Reader/README.md) and [engine evalu
 
 **Acceptance.** Open all five formats offline via the library. Reopening Leaf restores the library and reading position. Missing, malformed, unsupported and protected files show a clear error. Recheck runtime performance against the prototype results.
 
-Leaf uses PDFKit for PDF pages and zoom and SwiftUI for TXT and reflowable ebooks. EPUB uses the reviewed ZIP reader and Foundation XML parsing. MOBI and AZW3 use the libmobi decoder with encryption disabled and the system HTML parser for legacy markup. The three ebook adapters share native text and image rendering, internal navigation and a catalog position made up of the section and scroll block. The app requests read-only access to files selected for import. See the [native reader evaluation](native-reader-evaluation.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).
+Leaf uses PDFKit for PDF pages and zoom and SwiftUI for TXT and reflowable ebooks. EPUB uses the reviewed ZIP reader and Foundation XML parsing. MOBI and AZW3 use the libmobi decoder with encryption disabled and the system HTML parser for legacy markup. The three ebook adapters share native text and image rendering, internal navigation and a catalog position made up of the section and scroll block. Library imports read user-selected files into the private library. See the [native reader evaluation](native-reader-evaluation.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).
 
 The reflowable reader supports headings, basic emphasis, internal links and local raster images. Publisher stylesheets, embedded fonts, fixed layout and rich media remain compatibility work. EPUB accepts bounded, single-volume ZIP32 archives and rejects encryption manifests, including font obfuscation. Kindle checks both headers of hybrid books for encryption.
 
@@ -48,9 +48,15 @@ The MOBI 4 dictionary puts more than 5 MiB of HTML in a single section and remai
 
 ## 4. Independent conversion
 
-**Deliverable.** Start with TXT to EPUB as a candidate pair. Confirm the supported input and output pairs after evaluating native implementation and any format tooling.
+**Deliverable.** Convert local TXT to reflowable EPUB 3 with escaped text, preformatted line breaks, section navigation and a table of contents.
 
 **Acceptance.** The conversion module and its tests run without the reader. A user can choose a local source and destination, cancel a job, and receive a valid output or an actionable error. Source files remain intact and incomplete outputs are cleaned up. The output reopens in Leaf and an independent reader.
+
+`LeafConversion` uses the vendored ZIP writer and shares UTF-8, UTF-16 and GB18030 decoding with the reader through `LeafText`. Its test suite runs independently of the Xcode app and reading stack. The writer places the uncompressed media type entry first and creates a package document, reading order, navigation document and stylesheet. [EPUB 3.3](https://www.w3.org/TR/2026/REC-epub-33-20260113/)
+
+The Converter workspace keeps one job active at a time. The system save panel grants access to the selected target. The worker stages the complete archive in the sandbox temporary directory, checks cancellation before publication and uses an atomic write to publish the final file. Cancellation and write failures clean up staging. The sandbox permits read and write access to user-selected files for import and export. [Apple’s user-selected file entitlement](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.files.user-selected.read-write)
+
+Six standalone conversion tests and 22 Xcode tests passed on Apple Silicon. The Leaf integration test imported a generated EPUB and checked its contents and navigation. The standalone foliate-js reader opened an EPUB converted from UTF-16, turned pages and followed its table of contents. The source checksum stayed the same.
 
 ## 5. Automated DMG distribution
 

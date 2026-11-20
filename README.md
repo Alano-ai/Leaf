@@ -11,6 +11,12 @@ Choose **Import Book…** in Library or press **⌘O** while Library is selected
 - PDF supports page navigation and zoom. TXT supports UTF-8, BOM-marked UTF-16 and GB18030.
 - The import limit is 64 MB per file.
 
+## Convert TXT to EPUB
+
+In **Converter**, choose a TXT file and select **Convert to EPUB…** to choose the destination. The EPUB uses the source filename for its title and includes a table of contents. Cancel an active job from the Converter workspace. Leaf keeps the original TXT intact and saves the EPUB once the complete book is ready.
+
+The converter accepts UTF-8, BOM-marked UTF-16 and GB18030 TXT up to 64 MB.
+
 ## Build and run
 
 - Run Leaf on macOS 26 or later. Apple Silicon is the primary development and verification target.
@@ -25,6 +31,8 @@ open build/Build/Products/Debug/Leaf.app
 ```
 
 To verify reading, import samples of the five formats and check that each opens in Reader. Advance a PDF page, scroll a TXT, or use Contents and scroll in a reflowable book. Quit and relaunch Leaf to confirm that the most recent book restores its saved position, then open Library to see all imported books.
+
+Run the standalone conversion tests with `xcrun swift test --package-path Packages/LeafConversion --scratch-path build/conversion-module`.
 
 See [architecture and milestones](docs/architecture.md) for feature scope and acceptance criteria.
 

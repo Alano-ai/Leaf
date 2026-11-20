@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 struct WorkspaceView: View {
     @State private var workspace = Workspace()
     @State private var library = LibraryModel()
+    @State private var conversion = ConversionJob()
     @State private var importing = false
 
     private static let bookTypes = [UTType.pdf, .plainText, .epub]
@@ -88,11 +89,7 @@ struct WorkspaceView: View {
                 }
             }
         case .converter:
-            ContentUnavailableView(
-                "Format Conversion",
-                systemImage: "arrow.left.arrow.right",
-                description: Text("Conversion will be available in a later release.")
-            )
+            ConverterView(job: conversion)
         }
     }
 

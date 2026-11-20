@@ -10,6 +10,8 @@
 		A1700000000000000000001E /* CLibMobi in Frameworks */ = {isa = PBXBuildFile; productRef = A1700000000000000000001F /* CLibMobi */; };
 		A17000000000000000000021 /* Licenses in Resources */ = {isa = PBXBuildFile; fileRef = A17000000000000000000020 /* Licenses */; };
 		A17000000000000000000023 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = A17000000000000000000022 /* LICENSE */; };
+		A17000000000000000000028 /* LeafConversion in Frameworks */ = {isa = PBXBuildFile; productRef = A17000000000000000000026 /* LeafConversion */; };
+		A17000000000000000000029 /* LeafText in Frameworks */ = {isa = PBXBuildFile; productRef = A17000000000000000000027 /* LeafText */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 			files = (
 				A1700000000000000000001C /* ZIPFoundation in Frameworks */,
 				A1700000000000000000001E /* CLibMobi in Frameworks */,
+				A17000000000000000000028 /* LeafConversion in Frameworks */,
+				A17000000000000000000029 /* LeafText in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +105,8 @@
 			packageProductDependencies = (
 				A1700000000000000000001D /* ZIPFoundation */,
 				A1700000000000000000001F /* CLibMobi */,
+				A17000000000000000000026 /* LeafConversion */,
+				A17000000000000000000027 /* LeafText */,
 			);
 			productName = Leaf;
 			productReference = A17000000000000000000002 /* Leaf.app */;
@@ -150,6 +156,7 @@
 			mainGroup = A17000000000000000000008;
 			packageReferences = (
 				A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */,
+				A17000000000000000000025 /* XCLocalSwiftPackageReference "LeafConversion" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A17000000000000000000009 /* Products */;
@@ -331,6 +338,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Dependencies/ReaderLibraries;
 		};
+		A17000000000000000000025 /* XCLocalSwiftPackageReference "LeafConversion" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LeafConversion;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -343,6 +354,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A1700000000000000000001B /* XCLocalSwiftPackageReference "ReaderLibraries" */;
 			productName = CLibMobi;
+		};
+		A17000000000000000000026 /* LeafConversion */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A17000000000000000000025 /* XCLocalSwiftPackageReference "LeafConversion" */;
+			productName = LeafConversion;
+		};
+		A17000000000000000000027 /* LeafText */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A17000000000000000000025 /* XCLocalSwiftPackageReference "LeafConversion" */;
+			productName = LeafText;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
