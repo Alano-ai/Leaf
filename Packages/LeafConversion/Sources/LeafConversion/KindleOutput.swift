@@ -54,8 +54,8 @@ enum KindleOutput {
             contentsIndex = UInt32(records.count)
             records += contents
         }
-        let firstImage = book.cover == nil ? absent : UInt32(records.count)
-        if let cover = book.cover { records.append(cover) }
+        let firstImage = book.illustrations.isEmpty ? absent : UInt32(records.count)
+        records += book.illustrations.map(\.data)
         var flowIndex = absent
         if kf8 {
             flowIndex = UInt32(records.count)
@@ -66,9 +66,9 @@ enum KindleOutput {
         records.append(Data([0xe9, 0x8e, 0x0d, 0x0a]))
 
         var fields: [(UInt32, Data)] = [(503, title), (501, Data("EBOK".utf8))]
-        if book.cover != nil {
+        if let cover = book.coverIndex {
             var coverOffset = Data()
-            coverOffset.appendBE(UInt32(0))
+            coverOffset.appendBE(UInt32(cover))
             fields.append((201, coverOffset))
         }
         var metadata = Data("EXTH".utf8)
@@ -128,6 +128,7 @@ enum KindleOutput {
         pdb.setBE(now, at: 36)
         pdb.setBE(now, at: 40)
         pdb.replaceSubrange(60..<68, with: "BOOKMOBI".utf8)
+        guard records.count <= Int(UInt16.max) else { throw TXTToEPUB.ConversionError.outputTooLarge }
         pdb.setBE(UInt32(2 * records.count + 1), at: 68)
         pdb.setBE(UInt16(records.count), at: 76)
         var offset = pdb.count + 8 * records.count + 2
@@ -161,6 +162,7 @@ enum KindleOutput {
         let closing = "</body></html>"
         var text = kf8 ? Data() : Data((opening + "<body>").utf8)
         var chapters: [ChapterLocation] = []
+        let separateCover = book.coverOutsideChapters
         for (index, chapter) in book.chapters.enumerated() {
             try Task.checkCancellation()
             let skeletonStart = text.count
@@ -169,17 +171,24 @@ enum KindleOutput {
             if kf8 { text.append(contentsOf: closing.utf8) }
             let skeletonLength = text.count - skeletonStart
             let fragmentStart = text.count
-            if index == 0, book.cover != nil {
-                let source = kf8 ? "src=\"kindle:embed:0001\"" : "recindex=\"00001\""
-                text.append(contentsOf: "<p><img \(source) alt=\"\"/></p>".utf8)
+            if index == 0, let separateCover {
+                text.append(contentsOf: image(separateCover, in: book, alternative: "", kf8: kf8).utf8)
             }
             let chapterStart = kf8 ? skeletonStart : text.count
             if let title = chapter.title {
                 text.append(contentsOf: "<h1>\(title.escapedBookMarkup)</h1>".utf8)
             }
-            for line in chapter.text.split(separator: "\n", omittingEmptySubsequences: false) {
-                let content = line.isEmpty ? "<br/>" : line.escapedBookMarkup
-                text.append(contentsOf: "<p>\(content)</p>".utf8)
+            for block in chapter.blocks {
+                try Task.checkCancellation()
+                switch block {
+                case .text(let value):
+                    for line in value.split(separator: "\n", omittingEmptySubsequences: false) {
+                        let content = line.isEmpty ? "<br/>" : line.escapedBookMarkup
+                        text.append(contentsOf: "<p>\(content)</p>".utf8)
+                    }
+                case .image(let index, let alternative):
+                    text.append(contentsOf: image(index, in: book, alternative: alternative, kf8: kf8).utf8)
+                }
             }
             guard text.count <= ConversionFiles.limit else { throw TXTToEPUB.ConversionError.outputTooLarge }
             chapters.append(ChapterLocation(title: chapter.title, start: chapterStart, insertion: insertion,
@@ -187,6 +196,18 @@ enum KindleOutput {
         }
         if !kf8 { text.append(contentsOf: closing.utf8) }
         return (text, chapters)
+    }
+
+    private static func image(_ index: Int, in book: ConversionBook, alternative: String, kf8: Bool) -> String {
+        let source: String
+        if kf8 {
+            let number = String(index + 1, radix: 32, uppercase: true)
+            let padded = String(repeating: "0", count: max(4 - number.count, 0)) + number
+            source = "src=\"kindle:embed:\(padded)?mime=\(book.illustrations[index].format.mediaType)\""
+        } else {
+            source = String(format: "recindex=\"%05d\"", index + 1)
+        }
+        return "<p><img \(source) alt=\"\(alternative.escapedBookAttribute)\"/></p>"
     }
 
     private static func contentsRecords(_ chapters: [ChapterLocation], kf8: Bool, bookLength: Int) -> [Data] {

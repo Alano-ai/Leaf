@@ -1,11 +1,55 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import Foundation
+import LeafConversion
 import Testing
 import ZIPFoundation
 @testable import Leaf
 
 struct EPUBPublicationTests {
+    @Test(arguments: [LeafConversion.BookFormat.azw3, .mobi])
+    func kindleConversionPreservesInlineImages(target: LeafConversion.BookFormat) async throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let input = folder.appending(path: "Illustrated.epub")
+        let output = folder.appending(path: "Illustrated.\(target.rawValue)")
+        try archive(firstChapter: """
+            <html xmlns="http://www.w3.org/1999/xhtml"><body>
+              <p>图前的正文</p><img src="../images/cove.png" alt="海湾 &quot;A&quot;"/>
+              <p>图后的正文</p><img src="../images/cove.png" alt="同一张图"/>
+            </body></html>
+            """).write(to: input)
+        try await BookConversion.convert(source: input, destination: output, decodeEbook: ConversionSource.decode)
+        let reopened = try KindlePublication(data: Data(contentsOf: output))
+        try await checkIllustrations(in: reopened)
+
+        let epub = folder.appending(path: "Round trip.epub")
+        try await BookConversion.convert(source: output, destination: epub, decodeEbook: ConversionSource.decode)
+        try await checkIllustrations(in: EPUBPublication(data: Data(contentsOf: epub)))
+    }
+
+    private func checkIllustrations(in book: any EbookPublication) async throws {
+        let section = try await book.section(at: 0)
+        var content: [String] = []
+        var paths: [String] = []
+        for block in section.blocks {
+            switch block {
+            case .text(let text, _):
+                content.append(String(text.characters))
+            case .image(let path, let alternative):
+                content.append(alternative)
+                paths.append(path)
+            }
+        }
+        let first = try #require(content.firstIndex(of: "图前的正文"))
+        #expect(content.dropFirst(first).prefix(4) == ["图前的正文", "海湾 \"A\"", "图后的正文", "同一张图"])
+        #expect(paths.count == 2)
+        #expect(Set(paths).count == 1)
+        let path = try #require(paths.first)
+        #expect(try await book.imageData(at: path) == Self.image)
+    }
+
     @Test func opensEPUB3WithLocalImageAndChapterAnchor() async throws {
         let data = try archive()
         let book = try EPUBPublication(data: data)

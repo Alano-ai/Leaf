@@ -70,9 +70,9 @@ Local verification with Xcode 27.2 passed all 32 tests. The preview image mounte
 
 ## 6. Bookshelf, reading layouts and full conversion matrix
 
-The sidebar keeps the library, reader and converter workspaces. The bookshelf uses lazy cover thumbnails, with a bounded in-memory cache. Renaming changes the catalog title. Optional favorite and last-read fields keep older catalogs readable. The reader persists appearance and typography settings and calculates text pages from the active viewport.
+The sidebar keeps the library, reader and converter workspaces. The bookshelf uses lazy cover thumbnails, with a bounded in-memory cache. Renaming changes the catalog title. Optional favorite and last-read fields keep older catalogs readable. The reader defaults to a single page, calculates text pages from the active viewport and persists user-selected layouts and typography settings.
 
-`LeafConversion` accepts EPUB, MOBI, AZW3, PDF and TXT as inputs and outputs. Leaf supplies its existing EPUB and Kindle decoders to the package. The package writes EPUB and Kindle containers in Swift and uses PDFKit and Core Text to extract PDF text and lay out new PDF pages. It stages each output locally and publishes the complete file atomically. The converter runs inside Leaf’s sandbox, handles one file at a time and rejects protected books. PDF conversion requires selectable text.
+`LeafConversion` accepts EPUB, MOBI, AZW3, PDF and TXT as inputs and outputs. Leaf supplies its existing EPUB and Kindle decoders to the package. The shared ebook model preserves ordered text and local raster images, and repeated image references share one resource. The package writes EPUB and Kindle containers in Swift and uses PDFKit and Core Text to extract PDF text and lay out new PDF pages. It stages each output locally and publishes the complete file atomically. The converter runs inside Leaf’s sandbox, handles one file at a time and rejects protected books. PDF conversion requires selectable text.
 
 The Kindle writer uses the record layouts in Calibre’s published format notes and checks its output against an independent Calibre decoder during manual verification. Leaf ships its own Swift writer and the existing libmobi reader. [Calibre MOBI format notes](https://github.com/kovidgoyal/calibre/blob/v9.18.0/format_docs/pdb/mobi.txt)
 

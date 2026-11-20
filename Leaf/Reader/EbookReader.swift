@@ -129,8 +129,16 @@ struct EbookReader: View {
             EbookSectionView(section: page.section, publication: publication, start: start, style: style, onChange: changed)
         } else {
             ReflowPager(count: page.section.blocks.count, start: start, block: { page.section.blocks[$0] },
-                        publication: publication, style: style, onPositionChange: changed)
+                        publication: publication, style: style, onPositionChange: changed,
+                        onPreviousSection: adjacentSection(from: page, direction: -1),
+                        onNextSection: adjacentSection(from: page, direction: 1))
         }
+    }
+
+    private func adjacentSection(from page: Page, direction: Int) -> (() -> Void)? {
+        let index = page.position.section + direction
+        guard publication.sectionPaths.indices.contains(index) else { return nil }
+        return { show(section: index, block: direction < 0 ? Int.max : 0) }
     }
 
     private func show(section index: Int, block: Int = 0, fragment: String? = nil) {

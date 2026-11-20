@@ -86,4 +86,8 @@ extension StringProtocol {
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
     }
+
+    var escapedBookAttribute: String {
+        escapedBookMarkup.replacingOccurrences(of: "\"", with: "&quot;")
+    }
 }

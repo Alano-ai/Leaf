@@ -18,25 +18,86 @@ public enum BookFormat: String, CaseIterable, Codable, Identifiable, Sendable {
 }
 
 public struct ConversionBook: Sendable {
+    public struct Illustration: Sendable {
+        public enum Format: String, Sendable {
+            case jpeg, png, gif
+
+            var mediaType: String { "image/\(rawValue)" }
+        }
+
+        let data: Data
+        let format: Format
+        public var byteCount: Int { data.count }
+
+        public init(data: Data, format: Format) {
+            self.data = data
+            self.format = format
+        }
+    }
+
     public struct Chapter: Sendable {
+        public enum Block: Sendable {
+            case text(String)
+            case image(Int, alternative: String)
+        }
+
         let title: String?
-        let text: String
+        let blocks: [Block]
 
         public init(title: String? = nil, text: String) {
+            self.init(title: title, blocks: [.text(text)])
+        }
+
+        public init(title: String? = nil, blocks: [Block]) {
             self.title = title
-            self.text = text
+            self.blocks = blocks
+        }
+
+        var text: String {
+            blocks.compactMap { if case .text(let text) = $0 { text } else { nil } }.joined(separator: "\n\n")
         }
     }
 
     public let title: String
     let chapters: [Chapter]
-    /// A JPEG thumbnail of the book's declared cover.
-    let cover: Data?
+    let illustrations: [Illustration]
+    let coverIndex: Int?
 
-    public init(title: String, chapters: [Chapter], cover: Data? = nil) {
+    public init(title: String, chapters: [Chapter], illustrations: [Illustration] = [], coverIndex: Int? = nil) {
         self.title = title
         self.chapters = chapters
-        self.cover = cover
+        self.illustrations = illustrations
+        self.coverIndex = coverIndex
+    }
+
+    var coverOutsideChapters: Int? {
+        guard let coverIndex else { return nil }
+        let alreadyPresent = chapters.contains { chapter in
+            chapter.blocks.contains {
+                if case .image(let index, _) = $0 { return index == coverIndex }
+                return false
+            }
+        }
+        return alreadyPresent ? nil : coverIndex
+    }
+
+    func validate(for format: BookFormat) throws {
+        if let coverIndex, !illustrations.indices.contains(coverIndex) { throw BookConversion.Issue.unreadableBook }
+        let supportsImages = format == .epub || format == .mobi || format == .azw3
+        var hasContent = supportsImages && coverIndex != nil
+        for chapter in chapters {
+            try Task.checkCancellation()
+            for block in chapter.blocks {
+                switch block {
+                case .text(let text):
+                    if !hasContent { hasContent = text.contains { !$0.isWhitespace } }
+                case .image(let index, _):
+                    guard illustrations.indices.contains(index) else { throw BookConversion.Issue.unreadableBook }
+                    if supportsImages { hasContent = true }
+                }
+            }
+        }
+        guard hasContent else { throw BookConversion.Issue.unreadableBook }
     }
 
     var text: String {
@@ -90,11 +151,10 @@ public enum BookConversion {
         case .epub, .mobi, .azw3:
             guard let decodeEbook else { throw Issue.unreadableBook }
             let original = try await decodeEbook(bytes, input)
-            book = ConversionBook(title: title ?? original.title, chapters: original.chapters, cover: original.cover)
+            book = ConversionBook(title: title ?? original.title, chapters: original.chapters,
+                                  illustrations: original.illustrations, coverIndex: original.coverIndex)
         }
-        guard book.chapters.contains(where: { $0.text.contains(where: { !$0.isWhitespace }) }) else {
-            throw Issue.unreadableBook
-        }
+        try book.validate(for: output)
         let work = try ConversionFiles.workingDirectory(in: FileManager.default.temporaryDirectory)
         defer { try? FileManager.default.removeItem(at: work) }
         let staged = work.appending(path: "result.\(output.rawValue)")

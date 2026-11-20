@@ -8,7 +8,7 @@ struct ReaderView: View {
     let library: LibraryModel
     @AppStorage("reader.appearance") private var appearance = ReadingAppearance.system
     @AppStorage("reader.typeface") private var typeface = ReadingTypeface.serif
-    @AppStorage("reader.layout") private var layout = ReadingLayout.scrolling
+    @AppStorage("reader.layout") private var layout = ReadingLayout.single
     @AppStorage("reader.textSize") private var size = 17.0
     @AppStorage("reader.spacing") private var spacing = 5.0
     @AppStorage("reader.margins") private var margin = 32.0
@@ -171,7 +171,7 @@ private struct TextReader: View {
             } else {
                 ReflowPager(count: document.blocks.count, start: visibleBlock ?? 0, block: { index in
                     .text(AttributedString(String(document[index])), heading: false)
-                }, style: style) { visibleBlock = $0 }
+                }, style: style, onPositionChange: { visibleBlock = $0 })
             }
         }
         .background(style.appearance.background)

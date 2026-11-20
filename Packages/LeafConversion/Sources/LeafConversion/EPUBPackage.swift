@@ -24,28 +24,56 @@ enum EPUBPackage {
 
         let title = try escape(book.title.unicodeScalars)
         var navigationLinks: [String] = []
-        if let cover = book.cover {
-            try add(cover, to: archive, at: "EPUB/cover.jpg", date: date, checkpoint: checkpoint)
+        var imageItems: [String] = []
+        for (index, asset) in book.illustrations.enumerated() {
+            let filename = imageName(index, in: book)
+            try add(asset.data, to: archive, at: "EPUB/\(filename)", date: date, method: .none, checkpoint: checkpoint)
+            let properties = index == book.coverIndex ? " properties=\"cover-image\"" : ""
+            imageItems.append("<item id=\"image-\(index + 1)\" href=\"\(filename)\" media-type=\"\(asset.format.mediaType)\"\(properties)/>")
         }
-        for chapter in book.chapters {
-            let scalars = chapter.text.unicodeScalars
-            var start = scalars.startIndex
-            while start < scalars.endIndex {
-                try checkpoint()
-                let end = nextBoundary(in: scalars, from: start)
-                let content = try preformattedContent(scalars[start..<end], checkpoint: checkpoint)
-                let sectionNumber = navigationLinks.count + 1
-                let label = (start == scalars.startIndex ? chapter.title : nil)
-                    ?? String(localized: "Section \(sectionNumber)", bundle: .module)
-                let sectionTitle = try escape(label.unicodeScalars)
-                navigationLinks.append("<li><a href=\"section-\(sectionNumber).xhtml\">\(sectionTitle)</a></li>")
-                let cover = sectionNumber == 1 && book.cover != nil ? "<p><img src=\"cover.jpg\" alt=\"\"/></p>" : ""
-                try add(
-                    xhtml(title: sectionTitle, body: "<main>\(cover)<h1>\(sectionTitle)</h1><pre>\(content)</pre></main>"),
-                    to: archive, at: "EPUB/section-\(sectionNumber).xhtml", date: date, checkpoint: checkpoint
-                )
-                start = end
+        let separateCover = book.coverOutsideChapters
+        for (index, chapter) in book.chapters.enumerated() {
+            var sectionTitle = chapter.title
+            var content = ""
+            var remaining = 48_000
+            if index == 0, let separateCover {
+                content = try image(separateCover, in: book, alternative: "")
+                remaining -= content.utf8.count
             }
+            func flush() throws {
+                guard !content.isEmpty else { return }
+                let number = navigationLinks.count + 1
+                let label = sectionTitle ?? String(localized: "Section \(number)", bundle: .module)
+                let heading = try escape(label.unicodeScalars)
+                navigationLinks.append("<li><a href=\"section-\(number).xhtml\">\(heading)</a></li>")
+                try add(xhtml(title: heading, body: "<main><h1>\(heading)</h1>\(content)</main>"),
+                        to: archive, at: "EPUB/section-\(number).xhtml", date: date, checkpoint: checkpoint)
+                sectionTitle = nil
+                content = ""
+                remaining = 48_000
+            }
+            for block in chapter.blocks {
+                try checkpoint()
+                switch block {
+                case .image(let index, let alternative):
+                    let markup = try image(index, in: book, alternative: alternative)
+                    if remaining < markup.utf8.count { try flush() }
+                    content += markup
+                    remaining -= markup.utf8.count
+                case .text(let text):
+                    let scalars = text.unicodeScalars
+                    var start = scalars.startIndex
+                    while start < scalars.endIndex {
+                        if remaining == 0 { try flush() }
+                        let end = nextBoundary(in: scalars, from: start, limit: remaining)
+                        content += "<pre>\(try preformattedContent(scalars[start..<end], checkpoint: checkpoint))</pre>"
+                        remaining -= scalars.distance(from: start, to: end)
+                        start = end
+                        if start != scalars.endIndex { try flush() }
+                    }
+                }
+            }
+            try flush()
         }
 
         guard !navigationLinks.isEmpty else { throw BookConversion.Issue.unreadableBook }
@@ -60,8 +88,7 @@ enum EPUBPackage {
             "<item id=\"s\($0)\" href=\"section-\($0).xhtml\" media-type=\"application/xhtml+xml\"/>"
         }.joined(separator: "\n")
         let spine = sections.map { "<itemref idref=\"s\($0)\"/>" }.joined(separator: "\n")
-        let cover = book.cover == nil ? "" :
-            "<item id=\"cover\" href=\"cover.jpg\" media-type=\"image/jpeg\" properties=\"cover-image\"/>"
+        let images = imageItems.joined(separator: "\n")
         let modified = date.formatted(.iso8601)
         try add(
             """
@@ -76,7 +103,7 @@ enum EPUBPackage {
               <manifest>
                 <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
                 <item id="css" href="reading.css" media-type="text/css"/>
-                \(cover)
+                \(images)
                 \(manifest)
               </manifest>
               <spine>\(spine)</spine>
@@ -84,6 +111,15 @@ enum EPUBPackage {
             """,
             to: archive, at: "EPUB/package.opf", date: date, checkpoint: checkpoint
         )
+    }
+
+    private static func imageName(_ index: Int, in book: ConversionBook) -> String {
+        "image-\(index + 1).\(book.illustrations[index].format.rawValue)"
+    }
+
+    private static func image(_ index: Int, in book: ConversionBook, alternative: String) throws -> String {
+        let label = try escape(alternative.unicodeScalars.prefix(512)).replacingOccurrences(of: "\"", with: "&quot;")
+        return "<p><img src=\"\(imageName(index, in: book))\" alt=\"\(label)\"/></p>"
     }
 
     private static func xhtml(title: String, body: String) -> String {
@@ -97,10 +133,10 @@ enum EPUBPackage {
         """
     }
 
-    private static func nextBoundary(in text: String.UnicodeScalarView, from start: String.Index) -> String.Index {
-        let end = text.index(start, offsetBy: 48_000, limitedBy: text.endIndex) ?? text.endIndex
+    private static func nextBoundary(in text: String.UnicodeScalarView, from start: String.Index, limit: Int) -> String.Index {
+        let end = text.index(start, offsetBy: limit, limitedBy: text.endIndex) ?? text.endIndex
         guard end < text.endIndex else { return end }
-        let middle = text.index(start, offsetBy: 24_000)
+        let middle = text.index(start, offsetBy: limit / 2)
         return text[middle..<end].lastIndex(of: "\n").map { text.index(after: $0) } ?? end
     }
 

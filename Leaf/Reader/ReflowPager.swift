@@ -23,27 +23,33 @@ struct ReflowPager: View {
     let publication: (any EbookPublication)?
     let style: ReadingStyle
     let onPositionChange: (Int) -> Void
+    var onPreviousSection: (() -> Void)?
+    var onNextSection: (() -> Void)?
     @State private var cursor: Cursor
     @State private var history: [Cursor] = []
 
     init(count: Int, start: Int, block: @escaping (Int) -> EbookSection.Block, publication: (any EbookPublication)? = nil,
-         style: ReadingStyle, onPositionChange: @escaping (Int) -> Void) {
+         style: ReadingStyle, onPositionChange: @escaping (Int) -> Void,
+         onPreviousSection: (() -> Void)? = nil, onNextSection: (() -> Void)? = nil) {
         self.count = count
         self.block = block
         self.publication = publication
         self.style = style
         self.onPositionChange = onPositionChange
+        self.onPreviousSection = onPreviousSection
+        self.onNextSection = onNextSection
         _cursor = State(initialValue: Cursor(block: start))
     }
 
     var body: some View {
         GeometryReader { proxy in
+            let controlsHeight: CGFloat = 38
             let double = style.layout == .spread
             let width = min(proxy.size.width, double ? 1_360 : 820)
             let column = (width - (double ? 19 : 0)) / (double ? 2 : 1)
-            let margin = min(style.margin, max(16, (column - 130) / 2))
-            let contentSize = CGSize(width: max(100, column - 2 * margin),
-                                     height: max(100, proxy.size.height - 50 - 2 * margin))
+            let pageHeight = max(1, proxy.size.height - controlsHeight)
+            let margin = min(style.margin, max(0, (column - 104) / 2), max(0, (pageHeight - 100) / 2))
+            let contentSize = CGSize(width: max(1, column - 2 * margin), height: pageHeight - 2 * margin)
             let first = page(from: cursor, size: contentSize)
             let second = double ? page(from: first.next, size: contentSize) : nil
             let next = second?.next ?? first.next
@@ -61,6 +67,7 @@ struct ReflowPager: View {
                 }
                 .frame(maxWidth: width, maxHeight: .infinity)
                 controls(next: next, size: contentSize, double: double)
+                    .frame(height: controlsHeight)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onChange(of: contentSize) { history.removeAll() }
@@ -76,51 +83,56 @@ struct ReflowPager: View {
     private func controls(next: Cursor, size: CGSize, double: Bool) -> some View {
         HStack(spacing: 18) {
             Button("Previous Page", systemImage: "chevron.left") {
-                if let previous = history.popLast() {
+                if cursor == Cursor(block: 0) {
+                    onPreviousSection?()
+                } else if let previous = history.popLast() {
                     cursor = previous
                 } else {
                     cursor = previousPage(from: cursor, size: size, double: double)
                 }
             }
             .keyboardShortcut(.leftArrow, modifiers: [])
-            .disabled(cursor == Cursor(block: 0))
+            .disabled(cursor == Cursor(block: 0) && onPreviousSection == nil)
             Button("Next Page", systemImage: "chevron.right") {
-                history.append(cursor)
-                cursor = next
+                if next.block >= count {
+                    onNextSection?()
+                } else {
+                    history.append(cursor)
+                    cursor = next
+                }
             }
             .keyboardShortcut(.rightArrow, modifiers: [])
-            .disabled(next.block >= count)
+            .disabled(next.block >= count && onNextSection == nil)
         }
         .labelStyle(.iconOnly)
         .buttonStyle(.borderless)
         .foregroundStyle(style.appearance.foreground)
-        .frame(height: 38)
     }
 
     private func leaf(_ page: Page?, margin: CGFloat, size: CGSize) -> some View {
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array((page?.pieces ?? []).enumerated()), id: \.offset) { _, piece in
-                    switch piece {
-                    case .text(let text, let heading):
-                        Text(text)
-                            .font(style.textFont(heading: heading))
-                            .lineSpacing(style.spacing)
-                            .accessibilityAddTraits(heading ? .isHeader : [])
-                    case .image(let path, let alternative):
-                        if let publication {
-                            EbookImage(publication: publication, path: path, alternative: alternative,
-                                       maximumHeight: min(420, size.height * 0.7))
-                        }
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(Array((page?.pieces ?? []).enumerated()), id: \.offset) { _, piece in
+                switch piece {
+                case .text(let text, let heading):
+                    Text(text)
+                        .font(style.textFont(heading: heading))
+                        .lineSpacing(style.spacing)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(heading ? .isHeader : [])
+                case .image(let path, let alternative):
+                    if let publication {
+                        let height = min(420, size.height * 0.7)
+                        EbookImage(publication: publication, path: path, alternative: alternative, maximumHeight: height)
+                            .frame(width: size.width, height: height)
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(margin)
-            .foregroundStyle(style.appearance.foreground)
-            .textSelection(.enabled)
         }
-        .scrollIndicators(.hidden)
+        .frame(width: size.width, height: size.height, alignment: .topLeading)
+        .clipped()
+        .padding(margin)
+        .foregroundStyle(style.appearance.foreground)
+        .textSelection(.enabled)
         .id(cursor)
     }
 
@@ -160,7 +172,9 @@ struct ReflowPager: View {
                     .font: style.font(heading: heading), .paragraphStyle: paragraph,
                 ])
                 let framesetter = CTFramesetterCreateWithAttributedString(attributed)
-                let bounds = CGRect(x: 0, y: 0, width: size.width, height: remaining)
+                // Allow for SwiftUI's text layout rounding and font fallback at the bottom of a page.
+                let allowance = max(3.0, style.size / 4)
+                let bounds = CGRect(x: 0, y: 0, width: size.width, height: max(0, remaining - allowance))
                 let frame = CTFramesetterCreateFrame(framesetter, CFRange(), CGPath(rect: bounds, transform: nil), nil)
                 var length = CTFrameGetVisibleStringRange(frame).length
                 while length > 0 && Range(NSRange(location: 0, length: length), in: plain) == nil { length -= 1 }
@@ -177,7 +191,7 @@ struct ReflowPager: View {
                 let measured = CTFramesetterSuggestFrameSizeWithConstraints(
                     framesetter, CFRange(), nil, CGSize(width: size.width, height: CGFloat.greatestFiniteMagnitude), nil
                 )
-                remaining -= ceil(measured.height) + 10
+                remaining -= ceil(measured.height) + 10 + allowance
                 end = Cursor(block: end.block + 1)
             }
         }

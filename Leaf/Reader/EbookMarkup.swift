@@ -27,20 +27,25 @@ enum EbookMarkup {
     }
 
     static func rasterImage(data: Data, maximumSize: Int = 1_400) -> CGImage? {
-        let uncached = [kCGImageSourceShouldCache: false] as CFDictionary
-        guard let source = CGImageSourceCreateWithData(data as CFData, uncached),
-              let type = CGImageSourceGetType(source) as String?,
-              [UTType.png.identifier, UTType.jpeg.identifier, UTType.gif.identifier, UTType.bmp.identifier].contains(type),
-              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
-              let width = properties[kCGImagePropertyPixelWidth] as? Int,
-              let height = properties[kCGImagePropertyPixelHeight] as? Int,
-              width > 0, height > 0, width <= 16_000_000 / height else { return nil }
+        guard let source = rasterSource(data: data)?.source else { return nil }
         let options = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceThumbnailMaxPixelSize: maximumSize,
         ] as CFDictionary
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+    }
+
+    static func rasterSource(data: Data) -> (source: CGImageSource, type: UTType)? {
+        let uncached = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let source = CGImageSourceCreateWithData(data as CFData, uncached),
+              let identifier = CGImageSourceGetType(source) as String?,
+              let type = UTType(identifier), [UTType.png, .jpeg, .gif, .bmp].contains(type),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = properties[kCGImagePropertyPixelWidth] as? Int,
+              let height = properties[kCGImagePropertyPixelHeight] as? Int,
+              width > 0, height > 0, width <= 16_000_000 / height else { return nil }
+        return (source, type)
     }
 
     private struct Builder {
