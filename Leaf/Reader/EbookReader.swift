@@ -39,7 +39,7 @@ struct EbookReader: View {
     var body: some View {
         Group {
             if let page {
-                if page.section.blocks.isEmpty {
+                if page.section.blocks.isEmpty && style.layout == .scrolling {
                     ContentUnavailableView("Empty Section", systemImage: "doc.text")
                 } else {
                     readingContent(page)
@@ -63,7 +63,7 @@ struct EbookReader: View {
             if navigation != nil { ProgressView().padding().background(.background, in: RoundedRectangle(cornerRadius: 8)) }
         }
         .toolbar {
-            if !publication.contents.isEmpty {
+            if !publication.contents.isEmpty || (style.layout == .scrolling && page != nil) {
                 Button("Contents", systemImage: "list.bullet") { showingContents.toggle() }
                     .popover(isPresented: $showingContents) {
                         List {
@@ -77,18 +77,25 @@ struct EbookReader: View {
                                 .buttonStyle(.plain)
                             }
                         }
+                        .safeAreaInset(edge: .bottom) {
+                            if style.layout == .scrolling, let page {
+                                ControlGroup {
+                                    Button("Previous Section", systemImage: "chevron.left") {
+                                        showingContents = false
+                                        show(section: page.position.section - 1)
+                                    }
+                                    .disabled(page.position.section == 0)
+                                    Button("Next Section", systemImage: "chevron.right") {
+                                        showingContents = false
+                                        show(section: page.position.section + 1)
+                                    }
+                                    .disabled(page.position.section == publication.sectionPaths.count - 1)
+                                }
+                                .padding(8)
+                            }
+                        }
                         .frame(width: 300, height: 360)
                     }
-            }
-            ControlGroup {
-                Button("Previous Section", systemImage: "chevron.left") {
-                    if let page { show(section: page.position.section - 1) }
-                }
-                .disabled(page?.position.section == nil || page?.position.section == 0)
-                Button("Next Section", systemImage: "chevron.right") {
-                    if let page { show(section: page.position.section + 1) }
-                }
-                .disabled(page?.position.section == nil || page?.position.section == publication.sectionPaths.count - 1)
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -132,6 +139,11 @@ struct EbookReader: View {
                         publication: publication, style: style, onPositionChange: changed,
                         onPreviousSection: adjacentSection(from: page, direction: -1),
                         onNextSection: adjacentSection(from: page, direction: 1))
+                .overlay {
+                    if page.section.blocks.isEmpty {
+                        ContentUnavailableView("Empty Section", systemImage: "doc.text")
+                    }
+                }
         }
     }
 

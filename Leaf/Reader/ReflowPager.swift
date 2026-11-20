@@ -23,8 +23,8 @@ struct ReflowPager: View {
     let publication: (any EbookPublication)?
     let style: ReadingStyle
     let onPositionChange: (Int) -> Void
-    var onPreviousSection: (() -> Void)?
-    var onNextSection: (() -> Void)?
+    let onPreviousSection: (() -> Void)?
+    let onNextSection: (() -> Void)?
     @State private var cursor: Cursor
     @State private var history: [Cursor] = []
 
@@ -43,33 +43,29 @@ struct ReflowPager: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let controlsHeight: CGFloat = 38
             let double = style.layout == .spread
             let width = min(proxy.size.width, double ? 1_360 : 820)
             let column = (width - (double ? 19 : 0)) / (double ? 2 : 1)
-            let pageHeight = max(1, proxy.size.height - controlsHeight)
+            let pageHeight = max(1, proxy.size.height)
             let margin = min(style.margin, max(0, (column - 104) / 2), max(0, (pageHeight - 100) / 2))
             let contentSize = CGSize(width: max(1, column - 2 * margin), height: pageHeight - 2 * margin)
             let first = page(from: cursor, size: contentSize)
             let second = double ? page(from: first.next, size: contentSize) : nil
             let next = second?.next ?? first.next
-            VStack(spacing: 0) {
-                HStack(spacing: 9) {
-                    leaf(first, margin: margin, size: contentSize)
-                    if double {
-                        Rectangle()
-                            .fill(style.appearance.foreground.opacity(0.09))
-                            .frame(width: 1)
-                            .padding(.vertical, 20)
-                            .accessibilityHidden(true)
-                        leaf(second, margin: margin, size: contentSize)
-                    }
+            HStack(spacing: 9) {
+                leaf(first, margin: margin, size: contentSize)
+                if double {
+                    Rectangle()
+                        .fill(style.appearance.foreground.opacity(0.09))
+                        .frame(width: 1)
+                        .padding(.vertical, 20)
+                        .accessibilityHidden(true)
+                    leaf(second, margin: margin, size: contentSize)
                 }
-                .frame(maxWidth: width, maxHeight: .infinity)
-                controls(next: next, size: contentSize, double: double)
-                    .frame(height: controlsHeight)
             }
+            .frame(maxWidth: width, maxHeight: .infinity)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .toolbar { pageButtons(next: next, size: contentSize, double: double) }
             .onChange(of: contentSize) { history.removeAll() }
             .onChange(of: style.layout) { history.removeAll() }
             .onChange(of: style.size) { history.removeAll() }
@@ -80,8 +76,8 @@ struct ReflowPager: View {
         .onChange(of: cursor) { onPositionChange(cursor.block) }
     }
 
-    private func controls(next: Cursor, size: CGSize, double: Bool) -> some View {
-        HStack(spacing: 18) {
+    private func pageButtons(next: Cursor, size: CGSize, double: Bool) -> some View {
+        ControlGroup {
             Button("Previous Page", systemImage: "chevron.left") {
                 if cursor == Cursor(block: 0) {
                     onPreviousSection?()
@@ -104,9 +100,6 @@ struct ReflowPager: View {
             .keyboardShortcut(.rightArrow, modifiers: [])
             .disabled(next.block >= count && onNextSection == nil)
         }
-        .labelStyle(.iconOnly)
-        .buttonStyle(.borderless)
-        .foregroundStyle(style.appearance.foreground)
     }
 
     private func leaf(_ page: Page?, margin: CGFloat, size: CGSize) -> some View {
