@@ -1,12 +1,32 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Absent" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        }
+      }
+    },
     "Add Files" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "添加文件"
+          }
+        }
+      }
+    },
+    "Add a DeepSeek API key in Leaf Settings." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在 Leaf 设置中添加 DeepSeek API 密钥。"
           }
         }
       }
@@ -41,6 +61,16 @@
         }
       }
     },
+    "Ask DeepSeek" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请 DeepSeek 分析"
+          }
+        }
+      }
+    },
     "Background" : {
       "localizations" : {
         "zh-Hans" : {
@@ -71,6 +101,26 @@
         }
       }
     },
+    "Book exceeds the reading limit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电子书超出读取限制"
+          }
+        }
+      }
+    },
+    "Book structure could not be read" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取电子书结构"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "zh-Hans" : {
@@ -87,6 +137,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在取消…"
+          }
+        }
+      }
+    },
+    "Check Compatibility…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查兼容性…"
+          }
+        }
+      }
+    },
+    "Checked File" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待检查文件"
+          }
+        }
+      }
+    },
+    "Checking locally…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在本地检查…"
           }
         }
       }
@@ -121,12 +201,32 @@
         }
       }
     },
+    "Compatibility Check" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "兼容性检查"
+          }
+        }
+      }
+    },
     "Contents" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "目录"
+          }
+        }
+      }
+    },
+    "Contents Entries" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目录项"
           }
         }
       }
@@ -157,6 +257,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "转换此书…"
+          }
+        }
+      }
+    },
+    "Converted File" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转换后的文件"
           }
         }
       }
@@ -197,6 +307,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "深色"
+          }
+        }
+      }
+    },
+    "DeepSeek" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek"
+          }
+        }
+      }
+    },
+    "DeepSeek API Key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek API 密钥"
+          }
+        }
+      }
+    },
+    "DeepSeek Suggestions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek 建议"
+          }
+        }
+      }
+    },
+    "DeepSeek could not complete the check." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek 未能完成检查。"
+          }
+        }
+      }
+    },
+    "DeepSeek did not return readable suggestions." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek 未返回可读的建议。"
+          }
+        }
+      }
+    },
+    "DeepSeek is rate limiting this account. Try again later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek 正在限制此账户的请求频率，请稍后重试。"
+          }
+        }
+      }
+    },
+    "DeepSeek receives the format, counts, and check results shown here. Book text, images, titles, and filenames stay on this Mac. Your DeepSeek account may be charged." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek 只会收到这里显示的格式、数量和检查结果。书籍正文、图片、书名和文件名保留在此 Mac 上。你的 DeepSeek 账户可能产生费用。"
+          }
+        }
+      }
+    },
+    "DeepSeek rejected the API key. Check the key in Leaf Settings." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek 拒绝了 API 密钥，请在 Leaf 设置中核对密钥。"
           }
         }
       }
@@ -251,6 +441,16 @@
         }
       }
     },
+    "Enter a valid DeepSeek API key." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入有效的 DeepSeek API 密钥。"
+          }
+        }
+      }
+    },
     "Favorite" : {
       "localizations" : {
         "zh-Hans" : {
@@ -277,6 +477,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文件大小"
+          }
+        }
+      }
+    },
+    "File could not be accessed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法访问文件"
           }
         }
       }
@@ -331,12 +541,42 @@
         }
       }
     },
+    "Key saved" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "密钥已保存"
+          }
+        }
+      }
+    },
+    "Keychain" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "钥匙串"
+          }
+        }
+      }
+    },
     "Kindle Book" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kindle 书籍"
+          }
+        }
+      }
+    },
+    "Kindle Header Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kindle 文件头版本"
           }
         }
       }
@@ -374,6 +614,26 @@
         }
       }
     },
+    "Leaf could not access the macOS Keychain." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法访问 macOS 钥匙串。"
+          }
+        }
+      }
+    },
+    "Leaf could not connect to DeepSeek." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法连接到 DeepSeek。"
+          }
+        }
+      }
+    },
     "Leaf couldn’t load its library. %@" : {
       "localizations" : {
         "zh-Hans" : {
@@ -390,6 +650,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Leaf 无法保存阅读位置。%@"
+          }
+        }
+      }
+    },
+    "Leaf stores the key in your Mac’s Keychain. DeepSeek analysis runs only when you request it from the converter." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 将密钥存入 Mac 钥匙串。只有在格式转换器中主动请求时，才会运行 DeepSeek 分析。"
           }
         }
       }
@@ -430,6 +700,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "行距"
+          }
+        }
+      }
+    },
+    "Local Result" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地检查结果"
+          }
+        }
+      }
+    },
+    "Manage DeepSeek API keys" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理 DeepSeek API 密钥"
           }
         }
       }
@@ -484,6 +774,16 @@
         }
       }
     },
+    "No key saved" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未保存密钥"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "zh-Hans" : {
@@ -494,12 +794,42 @@
         }
       }
     },
+    "Open Leaf Settings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 Leaf 设置"
+          }
+        }
+      }
+    },
+    "Opened in Leaf" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 已打开文件"
+          }
+        }
+      }
+    },
     "Opening Book…" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在打开书籍…"
+          }
+        }
+      }
+    },
+    "Original File" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原文件"
           }
         }
       }
@@ -554,6 +884,16 @@
         }
       }
     },
+    "Pages" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "页数"
+          }
+        }
+      }
+    },
     "Paper" : {
       "localizations" : {
         "zh-Hans" : {
@@ -574,6 +914,16 @@
         }
       }
     },
+    "Present" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有"
+          }
+        }
+      }
+    },
     "Previous Page" : {
       "localizations" : {
         "zh-Hans" : {
@@ -590,6 +940,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上一节"
+          }
+        }
+      }
+    },
+    "Protected book" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受保护的电子书"
+          }
+        }
+      }
+    },
+    "Raster Images" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位图资源"
+          }
+        }
+      }
+    },
+    "Readable Cover" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可读取的封面"
           }
         }
       }
@@ -644,6 +1024,16 @@
         }
       }
     },
+    "Remove Key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除密钥"
+          }
+        }
+      }
+    },
     "Remove from Favorites" : {
       "localizations" : {
         "zh-Hans" : {
@@ -680,6 +1070,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存"
+          }
+        }
+      }
+    },
+    "Save Key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存密钥"
           }
         }
       }
@@ -734,12 +1134,32 @@
         }
       }
     },
+    "Sections" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分节数"
+          }
+        }
+      }
+    },
     "Select a book from your library." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "从书库中选择一本书。"
+          }
+        }
+      }
+    },
+    "Selectable Text" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可选文字"
           }
         }
       }
@@ -810,6 +1230,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "字号"
+          }
+        }
+      }
+    },
+    "The DeepSeek API account has insufficient balance." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DeepSeek API 账户余额不足。"
           }
         }
       }
@@ -910,6 +1340,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "字体"
+          }
+        }
+      }
+    },
+    "Unreadable Images" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取的图片"
+          }
+        }
+      }
+    },
+    "Unreadable Sections" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取的分节"
+          }
+        }
+      }
+    },
+    "Unresolved Contents Entries" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法定位的目录项"
+          }
+        }
+      }
+    },
+    "Unsupported book layout" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不支持的电子书版式"
           }
         }
       }

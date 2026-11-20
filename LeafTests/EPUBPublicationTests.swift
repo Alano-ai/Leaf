@@ -77,6 +77,18 @@ struct EPUBPublicationTests {
         #expect(book.contents.last?.target == EbookTarget(path: "OPS/chapters/山海.xhtml", fragment: "destination"))
     }
 
+    @Test func followsLocalXHTMLFallbackForForeignSpineResources() async throws {
+        let book = try EPUBPublication(data: archive(foreignSpineFallback: "first"))
+        #expect(book.sectionPaths.first == "OPS/chapters/first.xhtml")
+        #expect(book.contents.first?.label == "First chapter")
+        #expect(book.contents.first?.target.path == "OPS/chapters/first.xhtml")
+        let first = try await book.section(at: 0)
+        #expect(!first.blocks.isEmpty)
+
+        let cycle = try archive(foreignSpineFallback: "foreign")
+        #expect(throws: EbookError.invalidPackage) { try EPUBPublication(data: cycle) }
+    }
+
     @Test func rejectsProtectedAndFixedLayoutBooks() throws {
         let protected = try archive(additional: [("META-INF/encryption.xml", Data("<encryption/>".utf8))])
         #expect(throws: EbookError.protectedBook) { try EPUBPublication(data: protected) }
@@ -152,12 +164,18 @@ struct EPUBPublicationTests {
                             <html xmlns="http://www.w3.org/1999/xhtml">
                             <body><h1>First chapter</h1><img src="../images/cove.png" alt="Cove"/></body></html>
                             """,
-                         additional: [(String, Data)] = []) throws -> Data {
+                         additional: [(String, Data)] = [], foreignSpineFallback: String? = nil) throws -> Data {
         let archive = try Archive(accessMode: .create, pathEncoding: nil)
         let tocItem = useNCX
             ? "<item id=\"toc\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\"/>"
             : "<item id=\"toc\" href=\"nav.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/>"
         let tocAttribute = useNCX ? " toc=\"toc\"" : ""
+        let foreignItem = foreignSpineFallback.map { """
+            <item id="foreign" href="foreign.xml" media-type="application/xml" fallback="\($0)"/>
+            """ } ?? ""
+        let firstSpineID = foreignSpineFallback == nil ? "first" : "foreign"
+        let navigation = foreignSpineFallback == nil ? Self.navigation :
+            Self.navigation.replacingOccurrences(of: "chapters/first.xhtml", with: "foreign.xml")
         try add("mimetype", data: Data("application/epub+zip".utf8), to: archive, compress: false)
         let markup: [(String, String)] = [
             ("META-INF/container.xml", """
@@ -172,11 +190,12 @@ struct EPUBPublicationTests {
                   </metadata>
                   <manifest>
                     \(tocItem)
+                    \(foreignItem)
                     <item id="first" href="chapters/first.xhtml" media-type="application/xhtml+xml"/>
                     <item id="last" href="chapters/%E5%B1%B1%E6%B5%B7.xhtml" media-type="application/xhtml+xml"/>
                     <item id="image" href="images/cove.png" media-type="image/png"/>
                   </manifest>
-                  <spine\(tocAttribute)><itemref idref="first"/><itemref idref="last"/></spine>
+                  <spine\(tocAttribute)><itemref idref="\(firstSpineID)"/><itemref idref="last"/></spine>
                 </package>
                 """),
             ("OPS/chapters/first.xhtml", firstChapter),
@@ -185,12 +204,15 @@ struct EPUBPublicationTests {
                   <h1 id="destination">山海之间</h1><p>Chapter text.</p>
                 </body></html>
                 """),
-            (useNCX ? "OPS/toc.ncx" : "OPS/nav.xhtml", useNCX ? Self.ncx : Self.navigation),
+            (useNCX ? "OPS/toc.ncx" : "OPS/nav.xhtml", useNCX ? Self.ncx : navigation),
         ]
         for (path, text) in markup {
             try add(path, data: Data(text.utf8), to: archive)
         }
         try add("OPS/images/cove.png", data: Self.image, to: archive, compress: false)
+        if foreignSpineFallback != nil {
+            try add("OPS/foreign.xml", data: Data("<book/>".utf8), to: archive)
+        }
         for (path, data) in additional {
             try add(path, data: data, to: archive)
         }

@@ -19,8 +19,9 @@ struct EbookSection: Sendable {
 }
 
 enum EbookMarkup {
-    static func section(body: BookXML.Node, path: String, sections: Set<String>, images: Set<String>) -> EbookSection {
-        var builder = Builder(path: path, sections: sections, images: images)
+    static func section(body: BookXML.Node, path: String, sections: Set<String>, images: Set<String>,
+                        sectionAliases: [String: String] = [:]) -> EbookSection {
+        var builder = Builder(path: path, sections: sections, images: images, sectionAliases: sectionAliases)
         builder.visit(body)
         builder.flush()
         return EbookSection(blocks: builder.blocks, anchors: builder.anchors)
@@ -67,6 +68,7 @@ enum EbookMarkup {
         let path: String
         let sections: Set<String>
         let images: Set<String>
+        let sectionAliases: [String: String]
         var blocks: [EbookSection.Block] = []
         var anchors: [String: Int] = [:]
         var text = AttributedString()
@@ -104,8 +106,10 @@ enum EbookMarkup {
             case "pre": style.preformatted = true
             case "a":
                 style.link = nil
-                if let href = node.attributes["href"], let target = EbookTarget.resolve(href, in: path),
-                   sections.contains(target.path) { style.link = target.readerURL }
+                if let href = node.attributes["href"], let target = EbookTarget.resolve(href, in: path)?
+                    .replacingPath(using: sectionAliases), sections.contains(target.path) {
+                    style.link = target.readerURL
+                }
             case "br": append("\n", style: style, preserveWhitespace: true)
             case "li": append("• ", style: style)
             case "td", "th": append(" ", style: style)

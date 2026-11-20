@@ -77,3 +77,9 @@ The sidebar keeps the library, reader and converter workspaces. The bookshelf us
 The Kindle writer uses the record layouts in Calibre’s published format notes and checks its output against an independent Calibre decoder during manual verification. Leaf ships its own Swift writer and the existing libmobi reader. [Calibre MOBI format notes](https://github.com/kovidgoyal/calibre/blob/v9.18.0/format_docs/pdb/mobi.txt)
 
 **Acceptance.** Import by dragging from Finder, use the library filters and preserve legacy catalogs and reading positions. Exercise scrolling, single-page and two-page views with Chinese and Latin text. Convert all 20 directed format pairs with text-bearing samples. Verify that a batch can skip matching formats, protect existing destinations and preserve completed files on cancellation.
+
+## 7. Compatibility checks and corpus testing
+
+The converter reopens a selected source or compares a source with its saved output using Leaf’s existing readers. It reports supported structure such as Kindle header version, visible sections and images, unresolved table-of-contents entries, and selectable text. Local results are independent of the network. A separate, user-initiated request sends formats, counts and status flags to DeepSeek. The app keeps the API key in macOS Keychain and uses it only to authenticate the request. See [conversion corpus testing](conversion-testing.md).
+
+**Acceptance.** Run an offline corpus that covers all 20 directions and verifies that the source files remain intact. Reopen outputs to check text and raster resources. Verify that local checking works without an API key and that the optional DeepSeek request excludes book text, filenames, titles and images. Treat model suggestions as troubleshooting guidance and test device or Send to Kindle compatibility separately.

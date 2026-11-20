@@ -17,6 +17,8 @@ Leaf 的书库、阅读器、格式转换和错误提示支持简体中文。界
 
 阅读器默认按窗口大小显示单页，可在阅读工具栏切换模式。EPUB、MOBI、AZW3、PDF 和 TXT 可在 Leaf 内离线互转。EPUB、MOBI 和 AZW3 互转时会保留受支持的正文图片。
 
+在「格式转换」的文件行点盾牌图标，可本地检查原书或转换结果。需要排查 Kindle 导入问题时，可以在「Leaf → 设置」保存 DeepSeek API 密钥，然后在报告里点「请 DeepSeek 分析」。这一步会联网，可能按你的 DeepSeek 账户计费。
+
 ## Read a local book
 
 Drop files onto the bookshelf, choose **Import Books…**, or press **⌘O** in any library view. Leaf stores a private copy of each book. A single import opens in Reader. The sidebar provides All Books, Recently Read and Favorites. The book context menu provides conversion, renaming and file information. On startup, Leaf reopens the most recent book at its saved page, section, or scroll position.
@@ -30,6 +32,8 @@ Drop files onto the bookshelf, choose **Import Books…**, or press **⌘O** in 
 In **Converter**, drop or select one or more files, pick an output format and choose a destination. EPUB, MOBI, AZW3, PDF and TXT each work as a source or a target. In a batch, Leaf skips files already in the target format and keeps completed outputs if you cancel. The source files stay intact, and batch output uses a new filename when one already exists.
 
 All 20 directions run locally inside Leaf with no additional installation. The per-file conversion limit is 64 MB. EPUB, MOBI and AZW3 conversions reflow the text and carry detected chapter titles, covers and supported raster illustrations. PDF and TXT conversion uses text. PDFs need selectable text, so scanned PDFs require OCR before conversion.
+
+The shield button opens a local compatibility report for a source or compares the source with its converted output. To request DeepSeek suggestions, save your API key in Leaf Settings, then choose **Ask DeepSeek** in the report. Keys are stored in macOS Keychain. Only formats, counts and status flags are sent to DeepSeek. Filenames, titles, text, images and credentials stay out of the report. The API request authenticates with your key and may incur charges on your DeepSeek account. [DeepSeek API documentation](https://api-docs.deepseek.com/)
 
 ## Build and run
 
@@ -49,6 +53,8 @@ To verify reading, import samples of the five formats and check that each opens 
 Run the standalone conversion tests with `xcrun swift test --package-path Packages/LeafConversion --scratch-path build/conversion-module`.
 
 The shared `Leaf` scheme tests all 20 conversion directions and reopens the resulting files.
+
+See [conversion corpus testing](docs/conversion-testing.md) for publicly available fixtures and the local bulk conversion runner.
 
 See [architecture and milestones](docs/architecture.md) for feature scope and acceptance criteria.
 

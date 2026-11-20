@@ -11,5 +11,9 @@ struct LeafApp: App {
         }
         .defaultSize(width: 960, height: 640)
         .windowResizability(.contentMinSize)
+
+        Settings {
+            DeepSeekSettings()
+        }
     }
 }

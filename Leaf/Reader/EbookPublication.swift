@@ -69,6 +69,10 @@ struct EbookTarget: Hashable, Sendable {
     let path: String
     let fragment: String?
 
+    func replacingPath(using aliases: [String: String]) -> Self {
+        Self(path: aliases[path] ?? path, fragment: fragment)
+    }
+
     static func resolve(_ reference: String, in base: String) -> Self? {
         let source = reference.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !source.isEmpty, let url = URLComponents(string: source),

@@ -10,12 +10,14 @@ actor EPUBPublication: EbookPublication {
 
     private let archive: EPUBArchive
     private let sectionPathSet: Set<String>
+    private let sectionAliases: [String: String]
     private let imagePaths: Set<String>
     private let coverPath: String?
 
     private struct ManifestItem {
         let path: String?
         let mediaType: String
+        let fallback: String?
     }
 
     init(data: Data) throws {
@@ -55,26 +57,27 @@ actor EPUBPublication: EbookPublication {
                 }
                 navigationPath = path
             }
-            items[id] = ManifestItem(path: path, mediaType: mediaType)
+            items[id] = ManifestItem(path: path, mediaType: mediaType, fallback: item.attributes["fallback"])
         }
 
+        var aliases: [String: String] = [:]
         let sections = try spine.children.filter { $0.name == "itemref" }.map { entry in
-            guard let id = entry.attributes["idref"], let item = items[id], let path = item.path,
-                  item.mediaType == "application/xhtml+xml", archive.contains(path) else {
-                throw EbookError.invalidPackage
-            }
-            return path
+            guard let id = entry.attributes["idref"] else { throw EbookError.invalidPackage }
+            return try Self.sectionPath(for: id, items: items, archive: archive, aliases: &aliases)
         }
         guard !sections.isEmpty else { throw EbookError.invalidPackage }
         let paths = Set(sections)
+        aliases = aliases.filter { !paths.contains($0.key) }
         let ncxPath = spine.attributes["toc"].flatMap { items[$0] }.flatMap {
             $0.mediaType == "application/x-dtbncx+xml" ? $0.path : nil
         }
-        let toc = try Self.readContents(archive: archive, navigation: navigationPath, ncx: ncxPath, sections: paths)
+        let toc = try Self.readContents(archive: archive, navigation: navigationPath, ncx: ncxPath,
+                                       sections: paths, aliases: aliases)
 
         self.archive = archive
         sectionPaths = sections
         sectionPathSet = paths
+        sectionAliases = aliases
         let images = Set(items.values.compactMap { item in
             ["image/png", "image/jpeg", "image/gif"].contains(item.mediaType) ? item.path : nil
         })
@@ -97,7 +100,8 @@ actor EPUBPublication: EbookPublication {
         let path = sectionPaths[index]
         let document = try BookXML.parse(archive.data(at: path, limit: 4_000_000))
         guard document.name == "html", let body = document.child("body") else { throw EbookError.invalidMarkup }
-        return EbookMarkup.section(body: body, path: path, sections: sectionPathSet, images: imagePaths)
+        return EbookMarkup.section(body: body, path: path, sections: sectionPathSet, images: imagePaths,
+                                    sectionAliases: sectionAliases)
     }
 
     func imageData(at path: String) throws -> Data {
@@ -108,6 +112,23 @@ actor EPUBPublication: EbookPublication {
     func coverData() throws -> Data? {
         guard let coverPath else { return nil }
         return try imageData(at: coverPath)
+    }
+
+    private static func sectionPath(for id: String, items: [String: ManifestItem], archive: EPUBArchive,
+                                    aliases: inout [String: String]) throws -> String {
+        var next: String? = id
+        var seen: Set<String> = []
+        var replaced: [String] = []
+        while let current = next, seen.insert(current).inserted, let item = items[current] {
+            try Task.checkCancellation()
+            if let path = item.path, item.mediaType == "application/xhtml+xml", archive.contains(path) {
+                for source in replaced where source != path { aliases[source] = path }
+                return path
+            }
+            if let path = item.path { replaced.append(path) }
+            next = item.fallback
+        }
+        throw EbookError.invalidPackage
     }
 
     private static func requireReflowable(package: BookXML.Node, spine: BookXML.Node,
@@ -131,14 +152,15 @@ actor EPUBPublication: EbookPublication {
     }
 
     private static func readContents(archive: EPUBArchive, navigation: String?, ncx: String?,
-                                     sections: Set<String>) throws -> [EbookContentsEntry] {
+                                     sections: Set<String>, aliases: [String: String]) throws -> [EbookContentsEntry] {
         if let navigation {
             let document = try BookXML.parse(archive.data(at: navigation, limit: 1_000_000))
             let toc = document.all("nav").first(where: {
                 $0.attributes["epub:type"]?.split(whereSeparator: \.isWhitespace).contains("toc") == true
             })
             return (toc?.all("a") ?? []).compactMap { link in
-                contentsEntry(label: link.label, reference: link.attributes["href"], in: navigation, sections: sections)
+                contentsEntry(label: link.label, reference: link.attributes["href"], in: navigation,
+                              sections: sections, aliases: aliases)
             }
         }
         guard let ncx else { return [] }
@@ -148,14 +170,16 @@ actor EPUBPublication: EbookPublication {
         }
         return navigation.all("navPoint").compactMap { point in
             contentsEntry(label: point.child("navLabel")?.label ?? "",
-                          reference: point.child("content")?.attributes["src"], in: ncx, sections: sections)
+                          reference: point.child("content")?.attributes["src"], in: ncx,
+                          sections: sections, aliases: aliases)
         }
     }
 
     private static func contentsEntry(label: String, reference: String?, in path: String,
-                                      sections: Set<String>) -> EbookContentsEntry? {
-        guard !label.isEmpty, let reference, let target = EbookTarget.resolve(reference, in: path),
-              sections.contains(target.path) else { return nil }
+                                      sections: Set<String>, aliases: [String: String]) -> EbookContentsEntry? {
+        guard !label.isEmpty, let reference, let resolved = EbookTarget.resolve(reference, in: path) else { return nil }
+        let target = resolved.replacingPath(using: aliases)
+        guard sections.contains(target.path) else { return nil }
         return EbookContentsEntry(label: String(label.prefix(512)), target: target)
     }
 }

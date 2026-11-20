@@ -6,6 +6,7 @@ struct ConverterView: View {
     @Bindable var job: ConversionJob
     @State private var choosingSource = false
     @State private var hovering = false
+    @State private var compatibility: CompatibilityCandidate?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,6 +42,9 @@ struct ConverterView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(job.message ?? "")
+        }
+        .sheet(item: $compatibility) { candidate in
+            CompatibilityView(candidate: candidate)
         }
     }
 
@@ -107,6 +111,18 @@ struct ConverterView: View {
                 .foregroundStyle(.secondary)
             }
             Spacer()
+            Button("Check Compatibility…", systemImage: "checkmark.shield") {
+                let input = CompatibilityCandidate.File(url: source.url, format: source.format)
+                if case .saved(let url) = source.status, let format = BookFormat(file: url) {
+                    compatibility = CompatibilityCandidate(file: .init(url: url, format: format), original: input)
+                } else {
+                    compatibility = CompatibilityCandidate(file: input)
+                }
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.borderless)
+            .help("Check Compatibility…")
+            .disabled(job.isBusy)
             if case .saved(let url) = source.status {
                 Button("Show in Finder", systemImage: "folder") {
                     NSWorkspace.shared.activateFileViewerSelecting([url])
