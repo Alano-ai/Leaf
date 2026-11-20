@@ -11,17 +11,21 @@ struct EbookReader: View {
 
     let opening: EbookReading
     let resume: EbookPosition
+    let style: ReadingStyle
     let onPositionChange: (EbookPosition) -> Void
     let onFailure: (any Error) -> Void
 
     @State private var page: Page?
     @State private var navigation: Task<Void, Never>?
     @State private var showingContents = false
+    @State private var activeBlock: Int?
 
-    init(opening: EbookReading, resume: EbookPosition, onPositionChange: @escaping (EbookPosition) -> Void,
+    init(opening: EbookReading, resume: EbookPosition, style: ReadingStyle,
+         onPositionChange: @escaping (EbookPosition) -> Void,
          onFailure: @escaping (any Error) -> Void) {
         self.opening = opening
         self.resume = resume
+        self.style = style
         self.onPositionChange = onPositionChange
         self.onFailure = onFailure
         if resume.section == opening.position.section {
@@ -38,11 +42,7 @@ struct EbookReader: View {
                 if page.section.blocks.isEmpty {
                     ContentUnavailableView("Empty Section", systemImage: "doc.text")
                 } else {
-                    EbookSectionView(section: page.section, publication: publication, start: page.position.block) { block in
-                        if self.page?.id == page.id {
-                            onPositionChange(EbookPosition(section: page.position.section, block: block))
-                        }
-                    }
+                    readingContent(page)
                     .id(page.id)
                     .environment(\.openURL, OpenURLAction { url in
                         guard let target = EbookTarget(readerURL: url),
@@ -58,6 +58,7 @@ struct EbookReader: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(style.appearance.background)
         .overlay {
             if navigation != nil { ProgressView().padding().background(.background, in: RoundedRectangle(cornerRadius: 8)) }
         }
@@ -92,11 +93,20 @@ struct EbookReader: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if let page {
-                Text("Section \(page.position.section + 1) of \(publication.sectionPaths.count)")
+                let block = activeBlock ?? page.position.block
+                let progress = (Double(page.position.section) + Double(block) / Double(max(1, page.section.blocks.count)))
+                    / Double(publication.sectionPaths.count)
+                HStack {
+                    Text("Section \(page.position.section + 1) of \(publication.sectionPaths.count)")
+                    Spacer()
+                    Text(progress, format: .percent.precision(.fractionLength(0)))
+                        .accessibilityLabel("Reading Position")
+                }
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(style.appearance.foreground.opacity(0.7))
+                    .padding(.horizontal, 20)
                     .frame(maxWidth: .infinity, minHeight: 24)
-                    .background(.background)
+                    .background(style.appearance.background)
             }
         }
         .task {
@@ -105,6 +115,21 @@ struct EbookReader: View {
         .onDisappear {
             navigation?.cancel()
             navigation = nil
+        }
+    }
+
+    @ViewBuilder private func readingContent(_ page: Page) -> some View {
+        let start = activeBlock ?? page.position.block
+        let changed: (Int) -> Void = { block in
+            guard self.page?.id == page.id else { return }
+            activeBlock = block
+            onPositionChange(EbookPosition(section: page.position.section, block: block))
+        }
+        if style.layout == .scrolling {
+            EbookSectionView(section: page.section, publication: publication, start: start, style: style, onChange: changed)
+        } else {
+            ReflowPager(count: page.section.blocks.count, start: start, block: { page.section.blocks[$0] },
+                        publication: publication, style: style, onPositionChange: changed)
         }
     }
 
@@ -131,6 +156,7 @@ struct EbookReader: View {
     private func display(_ section: EbookSection, index: Int, block: Int, fragment: String?) {
         let target = fragment.flatMap { section.anchors[$0] } ?? block
         let position = EbookPosition(section: index, block: section.clamp(target))
+        activeBlock = position.block
         page = Page(section: section, position: position)
         onPositionChange(position)
     }
@@ -139,14 +165,17 @@ struct EbookReader: View {
 private struct EbookSectionView: View {
     let section: EbookSection
     let publication: any EbookPublication
+    let style: ReadingStyle
     let onChange: (Int) -> Void
     @State private var visibleBlock: Int?
     @State private var phase = ScrollPhase.idle
 
-    init(section: EbookSection, publication: any EbookPublication, start: Int, onChange: @escaping (Int) -> Void) {
+    init(section: EbookSection, publication: any EbookPublication, start: Int, style: ReadingStyle,
+         onChange: @escaping (Int) -> Void) {
         self.section = section
         self.publication = publication
         self.onChange = onChange
+        self.style = style
         _visibleBlock = State(initialValue: start)
     }
 
@@ -157,7 +186,7 @@ private struct EbookSectionView: View {
                     switch section.blocks[index] {
                     case .text(let text, let heading):
                         Text(text)
-                            .font(heading ? .title2.weight(.semibold) : nil)
+                            .font(style.textFont(heading: heading))
                             .accessibilityAddTraits(heading ? .isHeader : [])
                             .frame(maxWidth: .infinity, alignment: .leading)
                     case .image(let path, let alternative):
@@ -166,10 +195,10 @@ private struct EbookSectionView: View {
                 }
             }
             .scrollTargetLayout()
-            .font(.system(size: 17, design: .serif))
-            .lineSpacing(5)
+            .foregroundStyle(style.appearance.foreground)
+            .lineSpacing(style.spacing)
             .textSelection(.enabled)
-            .padding(28)
+            .padding(style.margin)
             .frame(maxWidth: 700)
             .frame(maxWidth: .infinity)
         }
@@ -190,10 +219,11 @@ private struct EbookSectionView: View {
     }
 }
 
-private struct EbookImage: View {
+struct EbookImage: View {
     let publication: any EbookPublication
     let path: String
     let alternative: String
+    var maximumHeight: CGFloat = 520
     @State private var image: CGImage?
     @State private var loaded = false
 
@@ -203,7 +233,7 @@ private struct EbookImage: View {
                 Image(decorative: image, scale: 1)
                     .resizable()
                     .scaledToFit()
-                    .frame(maxHeight: 520)
+                    .frame(maxHeight: maximumHeight)
                     .accessibilityHidden(alternative.isEmpty)
                     .accessibilityLabel(alternative)
             } else if !alternative.isEmpty {

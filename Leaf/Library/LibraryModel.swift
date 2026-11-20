@@ -41,12 +41,17 @@ struct ReadingSession {
 @Observable
 final class LibraryModel {
     var books: [LibraryBook] { catalog.books }
+    var recentBooks: [LibraryBook] {
+        books.filter { $0.lastRead != nil || $0.id == catalog.lastOpenedBookID }
+            .sorted { ($0.lastRead ?? .distantPast) > ($1.lastRead ?? .distantPast) }
+    }
     private(set) var session: ReadingSession?
     private(set) var busy = false
     private(set) var ready = false
     var message: String?
 
     private let storage: LibraryStorage
+    private let covers = LibraryCovers()
     private var catalog = LibraryCatalog()
 
     init(storage: LibraryStorage = .local) {
@@ -115,6 +120,33 @@ final class LibraryModel {
         }
     }
 
+    func fileURL(for book: LibraryBook) -> URL { storage.bookURL(book) }
+
+    func cover(for book: LibraryBook) async -> CGImage? {
+        await covers.image(at: storage.bookURL(book), for: book)
+    }
+
+    func rename(_ book: LibraryBook, to title: String) {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { return }
+        edit(book) { $0.title = String(title.prefix(512)) }
+    }
+
+    func toggleFavorite(_ book: LibraryBook) {
+        edit(book) { $0.favorite = $0.favorite != true }
+    }
+
+    private func edit(_ book: LibraryBook, change: (inout LibraryBook) -> Void) {
+        guard ready, !busy, let index = books.firstIndex(where: { $0.id == book.id }) else { return }
+        var updated = catalog
+        change(&updated.books[index])
+        do {
+            try commit(updated)
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
     func position(for session: ReadingSession) -> Int {
         let saved = books.first(where: { $0.id == session.book.id })?.position ?? session.initialPosition
         return min(saved, session.positionCount - 1)
@@ -171,6 +203,9 @@ final class LibraryModel {
     private func select(_ opened: ReadingSession, adding: Bool = false) throws {
         var updated = catalog
         if adding { updated.books.insert(opened.book, at: 0) }
+        if let index = updated.books.firstIndex(where: { $0.id == opened.book.id }) {
+            updated.books[index].lastRead = Date()
+        }
         updated.lastOpenedBookID = opened.book.id
         try commit(updated)
         session = opened

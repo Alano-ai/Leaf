@@ -4,6 +4,8 @@ import SwiftUI
 
 enum Workspace: CaseIterable, Hashable {
     case library
+    case recent
+    case favorites
     case reader
     case converter
 
@@ -13,7 +15,9 @@ enum Workspace: CaseIterable, Hashable {
 
     var title: LocalizedStringKey {
         switch self {
-        case .library: "Library"
+        case .library: "All Books"
+        case .recent: "Recently Read"
+        case .favorites: "Favorites"
         case .reader: "Reader"
         case .converter: "Converter"
         }
@@ -22,8 +26,12 @@ enum Workspace: CaseIterable, Hashable {
     var symbol: String {
         switch self {
         case .library: "books.vertical"
+        case .recent: "clock"
+        case .favorites: "star"
         case .reader: "book"
         case .converter: "arrow.left.arrow.right"
         }
     }
+
+    var isLibrary: Bool { self == .library || self == .recent || self == .favorites }
 }

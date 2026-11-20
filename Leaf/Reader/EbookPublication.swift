@@ -9,6 +9,7 @@ protocol EbookPublication: Sendable {
 
     func section(at index: Int) async throws -> EbookSection
     func imageData(at path: String) async throws -> Data
+    func coverData() async throws -> Data?
 }
 
 struct EbookContentsEntry: Hashable, Sendable {

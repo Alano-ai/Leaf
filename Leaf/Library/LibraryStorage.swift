@@ -2,23 +2,18 @@
 
 import CryptoKit
 import Foundation
+import LeafConversion
 
-enum BookFormat: String, Codable, Sendable {
-    case pdf
-    case txt
-    case epub
-    case mobi
-    case azw3
-
-    var label: String { rawValue.uppercased() }
-}
+typealias BookFormat = LeafConversion.BookFormat
 
 struct LibraryBook: Codable, Equatable, Identifiable, Sendable {
     let id: String
-    let title: String
+    var title: String
     let format: BookFormat
     var position = 0
     var ebookPosition: EbookPosition?
+    var favorite: Bool?
+    var lastRead: Date?
 
     static func identifier(for data: Data, format: BookFormat) -> String {
         "\(format.rawValue)-\(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined())"

@@ -78,10 +78,16 @@ struct ReadingFile: Sendable {
             content = .pdf
         case .txt:
             content = .text(try PlainText(data: data))
-        case .epub:
-            content = .ebook(try EPUBPublication(data: data))
-        case .mobi, .azw3:
-            content = .ebook(try KindlePublication(data: data))
+        case .epub, .mobi, .azw3:
+            content = .ebook(try Self.ebook(data, format: format))
+        }
+    }
+
+    static func ebook(_ data: Data, format: BookFormat) throws -> any EbookPublication {
+        switch format {
+        case .epub: try EPUBPublication(data: data)
+        case .mobi, .azw3: try KindlePublication(data: data)
+        default: throw ReadingError.unsupportedFormat
         }
     }
 

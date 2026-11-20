@@ -41,12 +41,32 @@
         }
       }
     },
+    "Choose two different supported formats." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择两种不同的受支持格式。"
+          }
+        }
+      }
+    },
     "Contents" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "目录"
+          }
+        }
+      }
+    },
+    "Leaf cannot convert protected or encrypted books." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaf 无法转换受保护或已加密的书籍。"
           }
         }
       }
@@ -81,12 +101,32 @@
         }
       }
     },
+    "The book is empty, damaged, or does not match its file extension." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "书籍为空、已损坏，或内容与文件扩展名不符。"
+          }
+        }
+      }
+    },
     "The generated EPUB exceeds Leaf’s 64 MB reading limit." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "生成的 EPUB 超过了 Leaf 的 64 MB 阅读上限。"
+          }
+        }
+      }
+    },
+    "This PDF has no selectable text. Convert scanned pages with OCR first." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 PDF 没有可选中的文本。请先用 OCR 识别扫描页。"
           }
         }
       }

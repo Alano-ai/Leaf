@@ -7,6 +7,31 @@ import Testing
 
 @MainActor
 struct LibraryTests {
+    @Test func legacyCatalogSupportsFavoritesAndRenamingWithoutMovingBooks() async throws {
+        let scratch = try makeScratchDirectory()
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        let storage = LibraryStorage(directory: scratch)
+        let content = Data("山海之间".utf8)
+        let id = LibraryBook.identifier(for: content, format: .txt)
+        let book = LibraryBook(id: id, title: "山海", format: .txt)
+        try storage.store(content, for: book)
+        let oldCatalog = """
+        {"books":[{"id":"\(id)","title":"山海","format":"txt","position":0}],"lastOpenedBookID":"\(id)"}
+        """
+        try Data(oldCatalog.utf8).write(to: scratch.appending(path: "Catalog.json"))
+        let library = LibraryModel(storage: storage)
+        #expect(await library.restore())
+        #expect(library.recentBooks.map(\.id) == [id])
+        library.toggleFavorite(book)
+        library.rename(book, to: "山海拾光")
+
+        let reopened = LibraryModel(storage: storage)
+        #expect(await reopened.restore())
+        #expect(reopened.books.first?.title == "山海拾光")
+        #expect(reopened.books.first?.favorite == true)
+        #expect(try Data(contentsOf: storage.bookURL(book)) == content)
+    }
+
     @Test func importsOneCopyAndRestoresTextPositionWithoutTheOriginal() async throws {
         let scratch = try makeScratchDirectory()
         defer { try? FileManager.default.removeItem(at: scratch) }

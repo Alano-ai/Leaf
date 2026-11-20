@@ -12,6 +12,7 @@ struct KindlePublication: EbookPublication {
     private let images: [String: Data]
     private let sectionNames: Set<String>
     private let imageNames: Set<String>
+    private let coverPath: String?
 
     init(data: Data) throws {
         var status: Int32 = 0
@@ -40,6 +41,14 @@ struct KindlePublication: EbookPublication {
         images = contents.images
         sectionNames = Set(contents.paths)
         imageNames = Set(contents.images.keys)
+        if let cover = mobi_get_exthrecord_by_tag(document, EXTH_COVEROFFSET)?.pointee,
+           let bytes = cover.data, [UInt32(1), 2, 4].contains(cover.size) {
+            let offset = mobi_decode_exthvalue(bytes, Int(cover.size))
+            let name = String(format: "resource%05u.", offset)
+            coverPath = contents.images.keys.first { $0.hasPrefix(name) }
+        } else {
+            coverPath = nil
+        }
         let table = try Self.readContents(contents.ncx, sections: Set(contents.paths))
         self.contents = table.isEmpty ? contents.paths.enumerated().map { index, path in
             EbookContentsEntry(label: String(localized: "Section \(index + 1)"),
@@ -57,6 +66,8 @@ struct KindlePublication: EbookPublication {
         guard let data = images[path] else { throw EbookError.invalidPackage }
         return data
     }
+
+    func coverData() -> Data? { coverPath.flatMap { images[$0] } }
 
     private static func bookTitle(_ document: UnsafeMutablePointer<MOBIData>) -> String {
         if let title = mobi_meta_get_title(document) {

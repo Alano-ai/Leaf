@@ -16,7 +16,10 @@ let package = Package(
         .target(name: "LeafText"),
         .target(
             name: "LeafConversion",
-            dependencies: ["LeafText", .product(name: "ZIPFoundation", package: "ReaderLibraries")],
+            dependencies: [
+                "LeafText", .product(name: "ZIPFoundation", package: "ReaderLibraries"),
+                .product(name: "CLibMobi", package: "ReaderLibraries"),
+            ],
             resources: [.process("Resources")]
         ),
         .testTarget(

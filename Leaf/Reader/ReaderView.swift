@@ -6,25 +6,49 @@ import SwiftUI
 struct ReaderView: View {
     let session: ReadingSession
     let library: LibraryModel
+    @AppStorage("reader.appearance") private var appearance = ReadingAppearance.system
+    @AppStorage("reader.typeface") private var typeface = ReadingTypeface.serif
+    @AppStorage("reader.layout") private var layout = ReadingLayout.scrolling
+    @AppStorage("reader.textSize") private var size = 17.0
+    @AppStorage("reader.spacing") private var spacing = 5.0
+    @AppStorage("reader.margins") private var margin = 32.0
+    @State private var showingPreferences = false
 
     private var position: Int { library.position(for: session) }
+    private var isPDF: Bool {
+        if case .pdf = session.content { return true }
+        return false
+    }
+    private var style: ReadingStyle {
+        ReadingStyle(appearance: appearance, typeface: typeface, layout: layout, size: size,
+                     spacing: spacing, margin: margin)
+    }
 
     var body: some View {
-        switch session.content {
-        case .pdf(let document):
-            PDFReader(document: document, position: position) {
-                library.savePosition($0, in: session)
+        Group {
+            switch session.content {
+            case .pdf(let document):
+                PDFReader(document: document, position: position, style: style) {
+                    library.savePosition($0, in: session)
+                }
+            case .text(let document):
+                TextReader(document: document, position: position, style: style) {
+                    library.savePosition($0, in: session)
+                }
+            case .ebook(let opening):
+                EbookReader(opening: opening, resume: library.ebookPosition(for: session, opening: opening), style: style) {
+                    library.savePosition($0, in: session)
+                } onFailure: {
+                    library.message = $0.localizedDescription
+                }
             }
-        case .text(let document):
-            TextReader(document: document, position: position) {
-                library.savePosition($0, in: session)
-            }
-        case .ebook(let opening):
-            EbookReader(opening: opening, resume: library.ebookPosition(for: session, opening: opening)) {
-                library.savePosition($0, in: session)
-            } onFailure: {
-                library.message = $0.localizedDescription
-            }
+        }
+        .toolbar {
+            Button("Reading Appearance", systemImage: "textformat.size") { showingPreferences.toggle() }
+                .popover(isPresented: $showingPreferences, arrowEdge: .top) {
+                    ReaderPreferences(appearance: $appearance, typeface: $typeface, layout: $layout, size: $size,
+                                      spacing: $spacing, margin: $margin, fixedLayout: isPDF)
+                }
         }
     }
 }
@@ -32,6 +56,7 @@ struct ReaderView: View {
 private struct PDFReader: View {
     let document: PDFDocument
     let position: Int
+    let style: ReadingStyle
     let onPositionChange: (Int) -> Void
     @State private var view: PDFView?
 
@@ -47,9 +72,15 @@ private struct PDFReader: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Text("Page \(position + 1) of \(document.pageCount)")
+            HStack {
+                Text("Page \(position + 1) of \(document.pageCount)")
+                Spacer()
+                Text(Double(position + 1) / Double(document.pageCount), format: .percent.precision(.fractionLength(0)))
+                    .accessibilityLabel("Reading Position")
+            }
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, minHeight: 24)
                 .background(.background)
         }
@@ -73,12 +104,25 @@ private struct PDFReader: View {
         .task {
             guard view == nil else { return }
             let pdf = PDFView()
-            pdf.displayMode = .singlePage
+            updateLayout(pdf)
             pdf.autoScales = true
             pdf.document = document
             if let page = document.page(at: position) { pdf.go(to: page) }
             view = pdf
         }
+        .onChange(of: style.layout) { if let view { updateLayout(view) } }
+        .onChange(of: style.appearance) { if let view { view.backgroundColor = NSColor(style.appearance.background) } }
+    }
+
+    private func updateLayout(_ pdf: PDFView) {
+        let page = document.page(at: position)
+        switch style.layout {
+        case .scrolling: pdf.displayMode = .singlePageContinuous
+        case .single: pdf.displayMode = .singlePage
+        case .spread: pdf.displayMode = .twoUp
+        }
+        pdf.backgroundColor = NSColor(style.appearance.background)
+        if let page, pdf.document != nil { pdf.go(to: page) }
     }
 
     private func savePage(in view: PDFView) {
@@ -108,37 +152,29 @@ private struct PDFSurface: NSViewRepresentable {
 
 private struct TextReader: View {
     let document: PlainText
+    let style: ReadingStyle
     let onPositionChange: (Int) -> Void
     @State private var visibleBlock: Int?
     @State private var phase = ScrollPhase.idle
 
-    init(document: PlainText, position: Int, onPositionChange: @escaping (Int) -> Void) {
+    init(document: PlainText, position: Int, style: ReadingStyle, onPositionChange: @escaping (Int) -> Void) {
         self.document = document
+        self.style = style
         self.onPositionChange = onPositionChange
         _visibleBlock = State(initialValue: position)
     }
 
     var body: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0) {
-                ForEach(document.blocks.indices, id: \.self) { index in
-                    Text(verbatim: String(document[index]))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+        Group {
+            if style.layout == .scrolling {
+                scrollingReader
+            } else {
+                ReflowPager(count: document.blocks.count, start: visibleBlock ?? 0, block: { index in
+                    .text(AttributedString(String(document[index])), heading: false)
+                }, style: style) { visibleBlock = $0 }
             }
-            .scrollTargetLayout()
-            .font(.system(size: 17))
-            .lineSpacing(4)
-            .textSelection(.enabled)
-            .frame(maxWidth: 680)
-            .padding(28)
-            .frame(maxWidth: .infinity)
         }
-        .scrollPosition(id: $visibleBlock, anchor: .top)
-        .onScrollPhaseChange { _, current in
-            phase = current
-            if current == .idle { savePosition() }
-        }
+        .background(style.appearance.background)
         .onChange(of: visibleBlock) {
             if phase == .idle { savePosition() }
         }
@@ -153,9 +189,33 @@ private struct TextReader: View {
                 .font(.caption.monospacedDigit())
                 .accessibilityLabel("Reading Position")
                 .accessibilityValue(Text(progress, format: .percent.precision(.fractionLength(0))))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(style.appearance.foreground.opacity(0.7))
                 .frame(maxWidth: .infinity, minHeight: 24)
-                .background(.background)
+                .background(style.appearance.background)
+        }
+    }
+
+    private var scrollingReader: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                ForEach(document.blocks.indices, id: \.self) { index in
+                    Text(verbatim: String(document[index]))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .scrollTargetLayout()
+            .font(style.textFont())
+            .lineSpacing(style.spacing)
+            .foregroundStyle(style.appearance.foreground)
+            .textSelection(.enabled)
+            .frame(maxWidth: 680)
+            .padding(style.margin)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollPosition(id: $visibleBlock, anchor: .top)
+        .onScrollPhaseChange { _, current in
+            phase = current
+            if current == .idle { savePosition() }
         }
     }
 

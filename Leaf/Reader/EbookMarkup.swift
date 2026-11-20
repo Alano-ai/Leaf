@@ -26,7 +26,7 @@ enum EbookMarkup {
         return EbookSection(blocks: builder.blocks, anchors: builder.anchors)
     }
 
-    static func rasterImage(data: Data) -> CGImage? {
+    static func rasterImage(data: Data, maximumSize: Int = 1_400) -> CGImage? {
         let uncached = [kCGImageSourceShouldCache: false] as CFDictionary
         guard let source = CGImageSourceCreateWithData(data as CFData, uncached),
               let type = CGImageSourceGetType(source) as String?,
@@ -38,7 +38,7 @@ enum EbookMarkup {
         let options = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: 1_400,
+            kCGImageSourceThumbnailMaxPixelSize: maximumSize,
         ] as CFDictionary
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options)
     }

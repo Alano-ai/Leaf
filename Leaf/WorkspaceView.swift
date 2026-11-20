@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct WorkspaceView: View {
     @State private var workspace = Workspace()
@@ -9,21 +8,20 @@ struct WorkspaceView: View {
     @State private var conversion = ConversionJob()
     @State private var importing = false
 
-    private static let bookTypes = [UTType.pdf, .plainText, .epub]
-        + ["mobi", "azw3"].compactMap { UTType(filenameExtension: $0, conformingTo: .data) }
-
     private var sidebarSelection: Binding<Workspace?> {
-        Binding(
-            get: { workspace },
-            set: { workspace = Workspace(selection: $0) }
-        )
+        Binding(get: { workspace }, set: { workspace = Workspace(selection: $0) })
     }
 
     var body: some View {
         NavigationSplitView {
-            List(Workspace.allCases, id: \.self, selection: sidebarSelection) { destination in
-                Label(destination.title, systemImage: destination.symbol)
-                    .tag(destination)
+            List(selection: sidebarSelection) {
+                Section("Library") {
+                    destination(.library)
+                    destination(.recent)
+                    destination(.favorites)
+                }
+                destination(.reader)
+                destination(.converter)
             }
             .listStyle(.sidebar)
             .accessibilityLabel("Workspaces")
@@ -34,20 +32,17 @@ struct WorkspaceView: View {
                 .navigationTitle(title)
         }
         .toolbar {
-            if workspace == .library {
+            if workspace.isLibrary {
                 Button("Import Books", systemImage: "plus") { importing = true }
                     .keyboardShortcut("o")
                     .disabled(!library.ready || library.busy)
             }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: Self.bookTypes) { result in
+        .fileImporter(isPresented: $importing, allowedContentTypes: BookFormat.importTypes,
+                      allowsMultipleSelection: true) { result in
             switch result {
-            case .success(let url):
-                Task {
-                    if await library.importBook(at: url) { workspace = .reader }
-                }
-            case .failure(let error):
-                library.message = error.localizedDescription
+            case .success(let urls): importBooks(urls)
+            case .failure(let error): library.message = error.localizedDescription
             }
         }
         .alert("Leaf", isPresented: Binding(
@@ -63,9 +58,13 @@ struct WorkspaceView: View {
         }
     }
 
+    private func destination(_ value: Workspace) -> some View {
+        Label(value.title, systemImage: value.symbol).tag(value)
+    }
+
     private var title: Text {
         if workspace == .reader, let book = library.session?.book {
-            return Text(verbatim: book.title)
+            return Text(verbatim: library.books.first(where: { $0.id == book.id })?.title ?? book.title)
         }
         return Text(workspace.title)
     }
@@ -73,8 +72,19 @@ struct WorkspaceView: View {
     @ViewBuilder
     private var detail: some View {
         switch workspace {
-        case .library:
-            libraryView
+        case .library, .recent, .favorites:
+            LibraryShelf(library: library, workspace: workspace) { book in
+                Task {
+                    if await library.open(book), workspace.isLibrary { workspace = .reader }
+                }
+            } onImport: {
+                importing = true
+            } onConvert: { book in
+                guard !conversion.isBusy else { return }
+                conversion.addBook(at: library.fileURL(for: book), title: book.title, format: book.format)
+                workspace = .converter
+            }
+            .dropDestination(for: URL.self) { urls, _ in importBooks(urls) }
         case .reader:
             if let session = library.session {
                 ReaderView(session: session, library: library)
@@ -93,44 +103,16 @@ struct WorkspaceView: View {
         }
     }
 
-    @ViewBuilder
-    private var libraryView: some View {
-        if library.busy {
-            ProgressView("Opening Book…")
-        } else if !library.ready {
-            ContentUnavailableView("Library Unavailable", systemImage: "books.vertical")
-        } else if library.books.isEmpty {
-            ContentUnavailableView {
-                Label("Your Library Is Empty", systemImage: "books.vertical")
-            } description: {
-                Text("Import an EPUB, MOBI, AZW3, PDF, or TXT file to start reading.")
-            } actions: {
-                Button("Import Book…") { importing = true }
+    @discardableResult
+    private func importBooks(_ urls: [URL]) -> Bool {
+        guard library.ready, !library.busy, !urls.isEmpty else { return false }
+        Task {
+            if urls.count == 1, let url = urls.first {
+                if await library.importBook(at: url), workspace.isLibrary { workspace = .reader }
+            } else {
+                for url in urls { _ = await library.importBook(at: url) }
             }
-        } else {
-            List(library.books) { book in
-                Button {
-                    Task {
-                        if await library.open(book) { workspace = .reader }
-                    }
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: book.format == .txt ? "doc.text" : "book.closed")
-                            .foregroundStyle(.secondary)
-                            .accessibilityHidden(true)
-                        Text(verbatim: book.title)
-                            .lineLimit(1)
-                        Spacer()
-                        Text(book.format.label)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 6)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            .listStyle(.inset)
         }
+        return true
     }
 }

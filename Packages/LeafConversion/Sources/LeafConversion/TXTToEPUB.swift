@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 import Foundation
-import LeafText
-import ZIPFoundation
 
 public enum TXTToEPUB {
     public enum ConversionError: LocalizedError, Equatable {
@@ -27,15 +25,13 @@ public enum TXTToEPUB {
         }
     }
 
-    private static let fileLimit = 64_000_000
-
     public static func convert(source: URL, destination: URL) throws {
         try convert(source: source, destination: destination,
                     temporaryDirectory: FileManager.default.temporaryDirectory, checkpoint: Task.checkCancellation)
     }
 
     static func convert(source: URL, destination: URL, temporaryDirectory: URL,
-                        checkpoint: () throws -> Void) throws {
+                        title: String? = nil, checkpoint: () throws -> Void) throws {
         try checkpoint()
         guard source.isFileURL, source.pathExtension.lowercased() == "txt" else {
             throw ConversionError.unsupportedSource
@@ -43,69 +39,21 @@ public enum TXTToEPUB {
         guard destination.isFileURL, destination.pathExtension.lowercased() == "epub" else {
             throw ConversionError.invalidDestination
         }
-        let reading = source.startAccessingSecurityScopedResource()
-        let writing = destination.startAccessingSecurityScopedResource()
-        defer {
-            if writing { destination.stopAccessingSecurityScopedResource() }
-            if reading { source.stopAccessingSecurityScopedResource() }
-        }
-        try validateDestination(destination, source: source)
-        let text = try read(source)
-        let fileName = source.deletingPathExtension().lastPathComponent
+        let access = ConversionFiles.Access(source, destination)
+        defer { access.end() }
+        try ConversionFiles.validateDestination(destination, source: source)
+        let text = try ConversionFiles.decodeText(ConversionFiles.read(source))
+        let fileName = title ?? source.deletingPathExtension().lastPathComponent
         let title = fileName.isEmpty ? String(localized: "Untitled", bundle: .module) : fileName
         try checkpoint()
 
-        let work = temporaryDirectory.appending(path: "LeafConversion-\(UUID().uuidString)", directoryHint: .isDirectory)
-        try FileManager.default.createDirectory(at: work, withIntermediateDirectories: false)
+        let work = try ConversionFiles.workingDirectory(in: temporaryDirectory)
         defer { try? FileManager.default.removeItem(at: work) }
         let staged = work.appending(path: "Book.epub", directoryHint: .notDirectory)
-        let date = Date()
-        do {
-            let archive = try Archive(url: staged, accessMode: .create, pathEncoding: nil)
-            try EPUBPackage.write(text: text, title: title, date: date, archive: archive, checkpoint: checkpoint)
-        }
+        let book = ConversionBook(title: title, chapters: [.init(text: text)])
+        try EPUBPackage.write(book, to: staged, checkpoint: checkpoint)
         try checkpoint()
-        let output = try Data(contentsOf: staged, options: .mappedIfSafe)
-        guard output.count <= fileLimit else { throw ConversionError.outputTooLarge }
-        try validateDestination(destination, source: source)
-        try checkpoint()
-        // Begin publication only after the complete archive is available and cancellation has been checked.
-        try output.write(to: destination, options: .atomic)
-    }
-
-    private static func read(_ source: URL) throws -> String {
-        let values = try source.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
-        guard values.isRegularFile == true else { throw ConversionError.unsupportedSource }
-        if let count = values.fileSize, count > fileLimit { throw ConversionError.inputTooLarge }
-        let handle = try FileHandle(forReadingFrom: source)
-        defer { try? handle.close() }
-        let data = try handle.read(upToCount: fileLimit + 1) ?? Data()
-        guard data.count <= fileLimit else { throw ConversionError.inputTooLarge }
-        guard let text = TXTText.decode(data) else { throw ConversionError.invalidText }
-        return text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
-    }
-
-    private static func validateDestination(_ destination: URL, source: URL) throws {
-        let sourcePath = source.resolvingSymlinksInPath().path(percentEncoded: false)
-        let destinationPath = destination.resolvingSymlinksInPath().path(percentEncoded: false)
-        if sourcePath == destinationPath {
-            throw ConversionError.sameFile
-        }
-        let original = try FileManager.default.attributesOfItem(atPath: sourcePath)
-        let existing: [FileAttributeKey: Any]
-        do {
-            existing = try FileManager.default.attributesOfItem(atPath: destination.path(percentEncoded: false))
-        } catch CocoaError.fileReadNoSuchFile {
-            return
-        } catch CocoaError.fileNoSuchFile {
-            return
-        }
-        guard existing[.type] as? FileAttributeType == .typeRegular else {
-            throw ConversionError.invalidDestination
-        }
-        if let device = original[.systemNumber] as? NSNumber, let inode = original[.systemFileNumber] as? NSNumber,
-           device == existing[.systemNumber] as? NSNumber, inode == existing[.systemFileNumber] as? NSNumber {
-            throw ConversionError.sameFile
-        }
+        let result = try ConversionFiles.read(staged, output: true)
+        try ConversionFiles.publish(result, to: destination, source: source, replaceExisting: true, checkpoint: checkpoint)
     }
 }

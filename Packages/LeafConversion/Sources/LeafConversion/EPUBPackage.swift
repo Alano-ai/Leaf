@@ -7,8 +7,9 @@ enum EPUBPackage {
     private static let xml = #"<?xml version="1.0" encoding="UTF-8"?>"#
     private static let style = "pre { font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }"
 
-    static func write(text: String, title: String, date: Date, archive: Archive,
-                      checkpoint: () throws -> Void) throws {
+    static func write(_ book: ConversionBook, to url: URL, checkpoint: () throws -> Void) throws {
+        let archive = try Archive(url: url, accessMode: .create, pathEncoding: nil)
+        let date = Date()
         try add("application/epub+zip", to: archive, at: "mimetype", date: date, method: .none, checkpoint: checkpoint)
         try add(
             """
@@ -21,25 +22,33 @@ enum EPUBPackage {
         )
         try add(style, to: archive, at: "EPUB/reading.css", date: date, checkpoint: checkpoint)
 
-        let title = try escape(title.unicodeScalars)
-        let scalars = text.unicodeScalars
-        var start = scalars.startIndex
+        let title = try escape(book.title.unicodeScalars)
         var navigationLinks: [String] = []
-        while start < scalars.endIndex {
-            try checkpoint()
-            let end = nextBoundary(in: scalars, from: start)
-            let content = try preformattedContent(scalars[start..<end], checkpoint: checkpoint)
-            let sectionNumber = navigationLinks.count + 1
-            let label = String(localized: "Section \(sectionNumber)", bundle: .module)
-            let sectionTitle = try escape(label.unicodeScalars)
-            navigationLinks.append("<li><a href=\"section-\(sectionNumber).xhtml\">\(sectionTitle)</a></li>")
-            try add(
-                xhtml(title: sectionTitle, body: "<main><h1>\(sectionTitle)</h1><pre>\(content)</pre></main>"),
-                to: archive, at: "EPUB/section-\(sectionNumber).xhtml", date: date, checkpoint: checkpoint
-            )
-            start = end
+        if let cover = book.cover {
+            try add(cover, to: archive, at: "EPUB/cover.jpg", date: date, checkpoint: checkpoint)
+        }
+        for chapter in book.chapters {
+            let scalars = chapter.text.unicodeScalars
+            var start = scalars.startIndex
+            while start < scalars.endIndex {
+                try checkpoint()
+                let end = nextBoundary(in: scalars, from: start)
+                let content = try preformattedContent(scalars[start..<end], checkpoint: checkpoint)
+                let sectionNumber = navigationLinks.count + 1
+                let label = (start == scalars.startIndex ? chapter.title : nil)
+                    ?? String(localized: "Section \(sectionNumber)", bundle: .module)
+                let sectionTitle = try escape(label.unicodeScalars)
+                navigationLinks.append("<li><a href=\"section-\(sectionNumber).xhtml\">\(sectionTitle)</a></li>")
+                let cover = sectionNumber == 1 && book.cover != nil ? "<p><img src=\"cover.jpg\" alt=\"\"/></p>" : ""
+                try add(
+                    xhtml(title: sectionTitle, body: "<main>\(cover)<h1>\(sectionTitle)</h1><pre>\(content)</pre></main>"),
+                    to: archive, at: "EPUB/section-\(sectionNumber).xhtml", date: date, checkpoint: checkpoint
+                )
+                start = end
+            }
         }
 
+        guard !navigationLinks.isEmpty else { throw BookConversion.Issue.unreadableBook }
         let sections = 1...navigationLinks.count
         let heading = try escape(String(localized: "Contents", bundle: .module).unicodeScalars)
         let links = navigationLinks.joined(separator: "\n")
@@ -51,6 +60,8 @@ enum EPUBPackage {
             "<item id=\"s\($0)\" href=\"section-\($0).xhtml\" media-type=\"application/xhtml+xml\"/>"
         }.joined(separator: "\n")
         let spine = sections.map { "<itemref idref=\"s\($0)\"/>" }.joined(separator: "\n")
+        let cover = book.cover == nil ? "" :
+            "<item id=\"cover\" href=\"cover.jpg\" media-type=\"image/jpeg\" properties=\"cover-image\"/>"
         let modified = date.formatted(.iso8601)
         try add(
             """
@@ -65,6 +76,7 @@ enum EPUBPackage {
               <manifest>
                 <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
                 <item id="css" href="reading.css" media-type="text/css"/>
+                \(cover)
                 \(manifest)
               </manifest>
               <spine>\(spine)</spine>
@@ -124,8 +136,12 @@ enum EPUBPackage {
 
     private static func add(_ text: String, to archive: Archive, at path: String, date: Date,
                             method: CompressionMethod = .deflate, checkpoint: () throws -> Void) throws {
+        try add(Data(text.utf8), to: archive, at: path, date: date, method: method, checkpoint: checkpoint)
+    }
+
+    private static func add(_ bytes: Data, to archive: Archive, at path: String, date: Date,
+                            method: CompressionMethod = .deflate, checkpoint: () throws -> Void) throws {
         try checkpoint()
-        let bytes = Data(text.utf8)
         try archive.addEntry(with: path, type: .file, uncompressedSize: Int64(bytes.count),
                              modificationDate: date, compressionMethod: method) { offset, count in
             try checkpoint()

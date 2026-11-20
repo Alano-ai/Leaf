@@ -67,3 +67,13 @@ Six standalone conversion tests and 22 Xcode tests passed on Apple Silicon. The 
 The [macOS workflow](../.github/workflows/macos.yml) tests the app and both Swift packages on the Apple Silicon Xcode 27 runner. The build job checks the mounted DMG and uploads it with the source archive and checksums. A separate job publishes these assets only for a version tag push. Developer ID signing and notarization are optional for previews. See the [release guide](releasing.md).
 
 Local verification with Xcode 27.2 passed all 32 tests. The preview image mounted successfully, contained the arm64 app at the requested version and preserved the license notices. A copy from the image launched under an isolated bundle identifier. The first hosted release and Gatekeeper check on a clean Mac remain pending.
+
+## 6. Bookshelf, reading layouts and full conversion matrix
+
+The sidebar keeps the library, reader and converter workspaces. The bookshelf uses lazy cover thumbnails, with a bounded in-memory cache. Renaming changes the catalog title. Optional favorite and last-read fields keep older catalogs readable. The reader persists appearance and typography settings and calculates text pages from the active viewport.
+
+`LeafConversion` accepts EPUB, MOBI, AZW3, PDF and TXT as inputs and outputs. Leaf supplies its existing EPUB and Kindle decoders to the package. The package writes EPUB and Kindle containers in Swift and uses PDFKit and Core Text to extract PDF text and lay out new PDF pages. It stages each output locally and publishes the complete file atomically. The converter runs inside Leaf’s sandbox, handles one file at a time and rejects protected books. PDF conversion requires selectable text.
+
+The Kindle writer uses the record layouts in Calibre’s published format notes and checks its output against an independent Calibre decoder during manual verification. Leaf ships its own Swift writer and the existing libmobi reader. [Calibre MOBI format notes](https://github.com/kovidgoyal/calibre/blob/v9.18.0/format_docs/pdb/mobi.txt)
+
+**Acceptance.** Import by dragging from Finder, use the library filters and preserve legacy catalogs and reading positions. Exercise scrolling, single-page and two-page views with Chinese and Latin text. Convert all 20 directed format pairs with text-bearing samples. Verify that a batch can skip matching formats, protect existing destinations and preserve completed files on cancellation.

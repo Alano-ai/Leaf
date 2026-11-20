@@ -11,6 +11,7 @@ actor EPUBPublication: EbookPublication {
     private let archive: EPUBArchive
     private let sectionPathSet: Set<String>
     private let imagePaths: Set<String>
+    private let coverPath: String?
 
     private struct ManifestItem {
         let path: String?
@@ -38,6 +39,7 @@ actor EPUBPublication: EbookPublication {
 
         var items: [String: ManifestItem] = [:]
         var navigationPath: String?
+        var coverImage: String?
         for item in manifest.children where item.name == "item" {
             guard let id = item.attributes["id"], !id.isEmpty, items[id] == nil,
                   let href = item.attributes["href"], !href.isEmpty, let mediaType = item.attributes["media-type"] else {
@@ -46,6 +48,7 @@ actor EPUBPublication: EbookPublication {
             let target = EbookTarget.resolve(href, in: packagePath)
             let path = target?.fragment == nil ? target?.path : nil
             let properties = Set(item.attributes["properties"]?.split(whereSeparator: \.isWhitespace) ?? [])
+            if properties.contains("cover-image") { coverImage = path }
             if properties.contains("nav") {
                 guard navigationPath == nil, let path, mediaType == "application/xhtml+xml" else {
                     throw EbookError.invalidPackage
@@ -72,10 +75,15 @@ actor EPUBPublication: EbookPublication {
         self.archive = archive
         sectionPaths = sections
         sectionPathSet = paths
-        imagePaths = Set(items.values.compactMap { item in
+        let images = Set(items.values.compactMap { item in
             ["image/png", "image/jpeg", "image/gif"].contains(item.mediaType) ? item.path : nil
         })
-        let metadataTitle = package.child("metadata")?.all("title").first?.label
+        imagePaths = images
+        let metadata = package.child("metadata")
+        let coverID = metadata?.all("meta").first(where: { $0.attributes["name"] == "cover" })?.attributes["content"]
+        let epub2Cover = coverID.flatMap { items[$0]?.path }
+        coverPath = (coverImage ?? epub2Cover).flatMap { images.contains($0) ? $0 : nil }
+        let metadataTitle = metadata?.all("title").first?.label
         title = metadataTitle.flatMap { $0.isEmpty ? nil : String($0.prefix(512)) }
             ?? String(localized: "Untitled EPUB")
         contents = toc.isEmpty ? sections.enumerated().map { index, path in
@@ -95,6 +103,11 @@ actor EPUBPublication: EbookPublication {
     func imageData(at path: String) throws -> Data {
         guard imagePaths.contains(path) else { throw EbookError.invalidPackage }
         return try archive.data(at: path, limit: 8_000_000)
+    }
+
+    func coverData() throws -> Data? {
+        guard let coverPath else { return nil }
+        return try imageData(at: coverPath)
     }
 
     private static func requireReflowable(package: BookXML.Node, spine: BookXML.Node,
